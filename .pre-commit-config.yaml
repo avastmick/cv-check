@@ -1,5 +1,37 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1024'] # Prevent files larger than 1MB
+      - id: check-merge-conflict
+      - id: detect-private-key
+
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.1
+    rev: v8.18.2
     hooks:
       - id: gitleaks
+        name: Detect hardcoded secrets (gitleaks)
+
+  # Rust checks
+  - repo: https://github.com/backplane/pre-commit-rust-hooks
+    rev: v1.2.0
+    hooks:
+      - id: fmt
+        name: Format Rust code (cargo fmt)
+        entry: bash -c 'cargo fmt --all --'
+        language: system # Override to ensure it runs in project context
+        types: [rust]
+        pass_filenames: false
+      - id: clippy
+        name: Lint Rust code (cargo clippy)
+        entry: bash -c 'cargo clippy --all-targets --all-features -- -D warnings'
+        language: system # Override to ensure it runs in project context
+        types: [rust]
+        pass_filenames: false
