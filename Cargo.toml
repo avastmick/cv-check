@@ -1,11 +1,11 @@
 [package]
-name = "cv_gen"
+name = "cv_check"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["avasmick@outlook.com"]
 description = "A modern CV and cover letter generator with themeable output"
 license = "MIT"
-repository = "https://github.com/yourusername/cv_gen"
+repository = "https://github.com/avastmick/cv-check"
 keywords = ["cv", "resume", "pdf", "typst", "generator"]
 categories = ["command-line-utilities", "text-processing"]
 
@@ -19,7 +19,7 @@ include_dir = "0.7.4"
 indicatif = "0.18.0"
 pulldown-cmark = "0.12"
 serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.140"
+serde_json = "1.0.141"
 serde_yaml = "0.9.34"
 tempfile = "3.20.0"
 thiserror = "2.0.12"
@@ -31,6 +31,16 @@ path = "src/lib.rs"
 [[bin]]
 name = "cv"
 path = "src/main.rs"
+
+[features]
+integration-tests = []
+
+[dev-dependencies]
+tempfile = "3.20.0"
+approx = "0.5"
+assert_cmd = "2.0"
+predicates = "3.1"
+pdf-extract = "0.9.0"
 
 [profile.release]
 lto = true
@@ -47,13 +57,3 @@ unsafe_code = "deny"
 all = "deny"           # Denies all lints in the default `clippy::all` group (correctness, suspicious, complexity, perf, style).
 pedantic = "deny"      # Denies all lints in `clippy::pedantic`. Use `#[allow]`s in tests ONLY or on `async` code.
 unwrap_used = "deny"   # Denies usage of `unwrap()` in any case.
-
-[features]
-integration-tests = []
-
-[dev-dependencies]
-tempfile = "3.20.0"
-approx = "0.5"
-assert_cmd = "2.0"
-predicates = "3.1"
-pdf-extract = "0.9.0"

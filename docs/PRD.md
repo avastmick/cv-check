@@ -4,6 +4,16 @@
 
 A modern, Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes.
 
+### Goal
+
+The application will iterate on additional features until the following features exist:
+- [-] Markdown CV to professionally typeset PDF output
+- [ ] Additional MS Word (`.docx`) output
+- [ ] Simple, multiple, impactfull, themeing
+- [ ] Align output CV keywords and experience to input **Job Description** with Generative AI assistance
+- [ ] Fully aligned generated Cover Letter to input **Job Description** with Generative AI assistance
+- [ ] Static site generation for CV including themeing and deployment
+
 ## Core Features
 
 ### Input Format
@@ -13,7 +23,7 @@ A modern, Rust-based command-line tool that converts Markdown files with YAML fr
 
 ### Output Formats
 - **PDF**: Professional typesetting via Typst
-- **DOCX**: Microsoft Word compatible documents  
+- **DOCX**: Microsoft Word compatible documents
 - **HTML**: Web-ready output with embedded styling
 
 ### Theme System
