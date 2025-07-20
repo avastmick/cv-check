@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 mod cli;
 mod config;
+mod constants;
 mod error;
 mod parser;
 mod render;
@@ -29,11 +30,11 @@ enum Commands {
         input: PathBuf,
 
         /// Font theme (classic, modern, sharp)
-        #[arg(short, long, default_value = "modern")]
+        #[arg(short, long, default_value = crate::constants::DEFAULT_THEME)]
         font_theme: String,
 
         /// Color theme (classic, modern, sharp)
-        #[arg(short, long, default_value = "modern")]
+        #[arg(short, long, default_value = crate::constants::DEFAULT_THEME)]
         color_theme: String,
 
         /// Output file path

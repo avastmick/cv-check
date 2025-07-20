@@ -1,13 +1,10 @@
-use pulldown_cmark::{Event, Options, Parser};
+use crate::constants::markdown_options;
+use pulldown_cmark::{Event, Parser};
 
 /// Parses markdown content into a vector of events.
 #[must_use]
 pub fn parse_markdown(content: &str) -> Vec<Event<'static>> {
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TABLES);
-    options.insert(Options::ENABLE_FOOTNOTES);
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_TASKLISTS);
+    let options = markdown_options();
 
     // Parse and convert to owned events
     let parser = Parser::new_ext(content, options);

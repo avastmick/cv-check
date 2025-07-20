@@ -1,8 +1,7 @@
+use crate::constants::{font_sizes, AVAILABLE_THEMES};
 use crate::error::CvError;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-
-pub const AVAILABLE_THEMES: &[&str] = &["classic", "modern", "sharp"];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FontTheme {
@@ -22,6 +21,28 @@ pub struct FontSpec {
     pub size_small: String,
     pub line_height: f32,
     pub letter_spacing: Option<String>,
+}
+
+impl FontSpec {
+    fn new(
+        family: &str,
+        weight_regular: u16,
+        weight_bold: u16,
+        letter_spacing: Option<&str>,
+    ) -> Self {
+        Self {
+            family: family.to_string(),
+            weight_regular,
+            weight_bold,
+            size_name: font_sizes::NAME.to_string(),
+            size_section: font_sizes::SECTION.to_string(),
+            size_subsection: font_sizes::SUBSECTION.to_string(),
+            size_normal: font_sizes::NORMAL.to_string(),
+            size_small: font_sizes::SMALL.to_string(),
+            line_height: 1.5,
+            letter_spacing: letter_spacing.map(std::string::ToString::to_string),
+        }
+    }
 }
 
 impl FontTheme {
@@ -45,88 +66,22 @@ impl FontTheme {
 
     fn classic() -> Self {
         Self {
-            header: FontSpec {
-                family: "Georgia".to_string(),
-                weight_regular: 400,
-                weight_bold: 700,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: None,
-            },
-            body: FontSpec {
-                family: "Times New Roman".to_string(),
-                weight_regular: 400,
-                weight_bold: 700,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: None,
-            },
+            header: FontSpec::new("Georgia", 400, 700, None),
+            body: FontSpec::new("Times New Roman", 400, 700, None),
         }
     }
 
     fn modern() -> Self {
         Self {
-            header: FontSpec {
-                family: "Inter".to_string(),
-                weight_regular: 400,
-                weight_bold: 700,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: Some("-0.02em".to_string()),
-            },
-            body: FontSpec {
-                family: "Open Sans".to_string(),
-                weight_regular: 400,
-                weight_bold: 600,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: None,
-            },
+            header: FontSpec::new("Inter", 400, 700, Some("-0.02em")),
+            body: FontSpec::new("Open Sans", 400, 600, None),
         }
     }
 
     fn sharp() -> Self {
         Self {
-            header: FontSpec {
-                family: "Montserrat".to_string(),
-                weight_regular: 400,
-                weight_bold: 700,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: Some("-0.03em".to_string()),
-            },
-            body: FontSpec {
-                family: "Roboto".to_string(),
-                weight_regular: 400,
-                weight_bold: 700,
-                size_name: "28pt".to_string(),
-                size_section: "16pt".to_string(),
-                size_subsection: "14pt".to_string(),
-                size_normal: "11pt".to_string(),
-                size_small: "10pt".to_string(),
-                line_height: 1.5,
-                letter_spacing: None,
-            },
+            header: FontSpec::new("Montserrat", 400, 700, Some("-0.03em")),
+            body: FontSpec::new("Roboto", 400, 700, None),
         }
     }
 }

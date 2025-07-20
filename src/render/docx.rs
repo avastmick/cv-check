@@ -1,5 +1,5 @@
 use crate::parser::Document;
-use crate::render::RenderEngine;
+use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
 use anyhow::Result;
 use std::path::Path;
@@ -15,12 +15,7 @@ impl DocxRenderer {
     ///
     /// Returns an error if the template file cannot be read.
     pub fn new(template_path: Option<&Path>) -> Result<Self> {
-        let template = if let Some(path) = template_path {
-            Some(std::fs::read_to_string(path)?)
-        } else {
-            None
-        };
-
+        let template = load_template(template_path)?;
         Ok(Self {
             _template: template,
         })

@@ -8,6 +8,19 @@ use crate::themes::Theme;
 use anyhow::Result;
 use std::path::Path;
 
+/// Utility function to load an optional template file
+///
+/// # Errors
+///
+/// Returns an error if the template file cannot be read.
+pub fn load_template(template_path: Option<&Path>) -> Result<Option<String>> {
+    if let Some(path) = template_path {
+        Ok(Some(std::fs::read_to_string(path)?))
+    } else {
+        Ok(None)
+    }
+}
+
 pub trait RenderEngine {
     /// Renders a document to the specified output path.
     ///

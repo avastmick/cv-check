@@ -1,5 +1,5 @@
 use crate::parser::Document;
-use crate::render::RenderEngine;
+use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
 use anyhow::Result;
 use pulldown_cmark::html;
@@ -16,12 +16,7 @@ impl HtmlRenderer {
     ///
     /// Returns an error if the template file cannot be read.
     pub fn new(template_path: Option<&Path>) -> Result<Self> {
-        let template = if let Some(path) = template_path {
-            Some(std::fs::read_to_string(path)?)
-        } else {
-            None
-        };
-
+        let template = load_template(template_path)?;
         Ok(Self {
             _template: template,
         })
@@ -48,7 +43,7 @@ impl HtmlRenderer {
             --muted: {};
             --background: {};
         }}
-        
+
         body {{
             font-family: {}, sans-serif;
             color: var(--text);
@@ -58,33 +53,33 @@ impl HtmlRenderer {
             margin: 0 auto;
             padding: 2rem;
         }}
-        
+
         h1 {{
             font-family: {}, sans-serif;
             color: var(--primary);
             border-bottom: 2px solid var(--primary);
             padding-bottom: 0.5rem;
         }}
-        
+
         h2 {{
             color: var(--secondary);
             margin-top: 2rem;
         }}
-        
+
         a {{
             color: var(--accent);
             text-decoration: none;
         }}
-        
+
         a:hover {{
             text-decoration: underline;
         }}
-        
+
         .header {{
             text-align: center;
             margin-bottom: 2rem;
         }}
-        
+
         .contact {{
             color: var(--muted);
             font-size: 0.9rem;
@@ -99,7 +94,7 @@ impl HtmlRenderer {
             {} {}
         </div>
     </div>
-    
+
     {}
 </body>
 </html>"#,

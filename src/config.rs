@@ -77,12 +77,14 @@ impl Default for Margins {
     }
 }
 
+use crate::constants::DEFAULT_THEME;
+
 fn default_font_theme() -> String {
-    "modern".to_string()
+    DEFAULT_THEME.to_string()
 }
 
 fn default_color_theme() -> String {
-    "modern".to_string()
+    DEFAULT_THEME.to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -98,8 +100,8 @@ pub struct GlobalConfig {
 impl Default for GlobalConfig {
     fn default() -> Self {
         Self {
-            default_font_theme: Some("modern".to_string()),
-            default_color_theme: Some("modern".to_string()),
+            default_font_theme: Some(DEFAULT_THEME.to_string()),
+            default_color_theme: Some(DEFAULT_THEME.to_string()),
             pdf_engine: Some("typst".to_string()),
             custom_themes_dir: None,
             output_dir: Some("./output".to_string()),

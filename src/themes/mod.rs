@@ -26,9 +26,7 @@ impl Theme {
     /// Returns lists of available font and color theme names.
     #[must_use]
     pub fn available_themes() -> (Vec<&'static str>, Vec<&'static str>) {
-        (
-            font::AVAILABLE_THEMES.to_vec(),
-            color::AVAILABLE_THEMES.to_vec(),
-        )
+        use crate::constants::AVAILABLE_THEMES;
+        (AVAILABLE_THEMES.to_vec(), AVAILABLE_THEMES.to_vec())
     }
 }

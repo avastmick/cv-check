@@ -1,8 +1,7 @@
+use crate::constants::AVAILABLE_THEMES;
 use crate::error::CvError;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-
-pub const AVAILABLE_THEMES: &[&str] = &["classic", "modern", "sharp"];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ColorTheme {

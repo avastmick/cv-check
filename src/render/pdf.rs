@@ -1,5 +1,5 @@
 use crate::parser::Document;
-use crate::render::RenderEngine;
+use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
 use anyhow::Result;
 use std::fmt::Write;
@@ -34,12 +34,7 @@ impl PdfRenderer {
     ///
     /// Returns an error if the template file cannot be read.
     pub fn new(template_path: Option<&Path>) -> Result<Self> {
-        let template = if let Some(path) = template_path {
-            Some(std::fs::read_to_string(path)?)
-        } else {
-            None
-        };
-
+        let template = load_template(template_path)?;
         Ok(Self { template })
     }
 
@@ -179,14 +174,10 @@ impl PdfRenderer {
     }
 
     fn render_markdown_as_typst(content: &str, output: &mut String, theme: &Theme) {
-        use pulldown_cmark::{Event, Options, Parser};
+        use crate::constants::markdown_options;
+        use pulldown_cmark::{Event, Parser};
 
-        let mut options = Options::empty();
-        options.insert(Options::ENABLE_TABLES);
-        options.insert(Options::ENABLE_FOOTNOTES);
-        options.insert(Options::ENABLE_STRIKETHROUGH);
-        options.insert(Options::ENABLE_TASKLISTS);
-
+        let options = markdown_options();
         let parser = Parser::new_ext(content, options);
         let mut render_ctx = RenderContext::new();
 
