@@ -1,0 +1,26 @@
+*.log
+*.tuc
+*.code-workspace
+.DS_Store
+
+# Outputs
+output/
+**/*.pdf
+**/*.docx
+
+# Fonts
+fonts/
+
+# Sensitive
+.env**
+
+# Codegen
+CLAUDE*
+INSTRUCTIONS*
+
+# Test coverage
+tarpaulin-report.html
+./lcov.info
+
+# Added by cargo
+/target
