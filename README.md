@@ -5,7 +5,7 @@ A modern, Rust-based command-line tool for generating professional CVs and cover
 ## Features
 
 - **Simple Markdown Input**: Write your CV in plain Markdown with YAML frontmatter
-- **Beautiful Themes**: Choose from classic, modern, or sharp font and color themes  
+- **Beautiful Themes**: Choose from classic, modern, or sharp font and color themes
 - **Multiple Formats**: Generate PDF (via Typst), DOCX, and HTML
 - **Flexible Layouts**: Single column, two column, or condensed summary versions
 - **Live Reload**: Auto-rebuild on file changes with `watch` command
@@ -32,7 +32,7 @@ cargo install typst-cli
 ## Installation
 
 ```bash
-cargo install cv_gen
+cargo install cv_check
 ```
 
 ## Quick Start
@@ -88,7 +88,7 @@ cv check <input.md>        # Validate markdown structure
 ### Font Themes
 
 - **Classic**: Traditional serif fonts (Georgia/Times New Roman)
-- **Modern**: Clean sans-serif (Inter/Open Sans)  
+- **Modern**: Clean sans-serif (Inter/Open Sans)
 - **Sharp**: Bold geometric fonts (Montserrat/Roboto)
 
 ### Color Themes
@@ -145,7 +145,7 @@ font_theme: modern
 fonts:
   header:
     family: "Playfair Display"
-    
+
 # Use modern colors but customize primary
 color_theme: modern
 colors:
@@ -174,15 +174,19 @@ cargo tarpaulin --out Html
 ## Project Structure
 
 ```
-cv_gen/
+cv_check/
 ├── src/
 │   ├── cli/              # Command interface
 │   ├── parser/           # Markdown/YAML parsing
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
-│   └── watch.rs          # File watching
+│   ├── templates/        # Markdown templates
+│   ├── config.rs         # Configuration types
+│   └── error.rs          # Error handling
 ├── templates/            # Typst templates
+├── fonts/                # TTF font files
 ├── examples/             # Example documents
+├── cv/                   # Output directory
 └── tests/               # Test suite
 ```
 

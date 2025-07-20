@@ -57,15 +57,19 @@ cv serve <input.md>        # Preview server (planned)
 
 ### Project Structure
 ```
-cv_gen/
+cv_check/
 ├── src/
 │   ├── cli/              # Command interface
 │   ├── parser/           # Markdown/YAML parsing
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
-│   └── watch.rs          # File watching
+│   ├── templates/        # Markdown templates
+│   ├── config.rs         # Configuration types
+│   └── error.rs          # Error handling
 ├── templates/            # Typst templates
+├── fonts/                # TTF font files
 ├── examples/             # Example documents
+├── cv/                   # Output directory
 └── tests/               # Comprehensive test suite
 ```
 
@@ -128,7 +132,7 @@ subject: string
 
 ### Installation
 ```bash
-cargo install cv_gen
+cargo install cv_check
 ```
 
 ### Basic Usage

@@ -48,7 +48,7 @@ A Rust-based command-line tool that converts Markdown files with YAML frontmatte
 ## Module Structure
 
 ```rust
-cv_gen/
+cv_check/
 ├── src/
 │   ├── main.rs           // Entry point
 │   ├── lib.rs            // Library exports
@@ -65,10 +65,18 @@ cv_gen/
 │   │   └── html.rs       // HTML generation
 │   ├── themes/
 │   │   ├── mod.rs        // Theme management
-│   │   ├── fonts.rs      // Font themes
-│   │   └── colors.rs     // Color themes
+│   │   ├── font.rs       // Font themes
+│   │   └── color.rs      // Color themes
+│   ├── templates/        // Markdown templates
+│   │   ├── cv_template.md
+│   │   └── letter_template.md
 │   ├── config.rs         // Configuration types
-│   └── watch.rs          // File watching
+│   └── error.rs          // Error handling
+├── templates/            // Typst templates
+├── fonts/                // TTF font files
+├── examples/             // Example documents
+├── cv/                   // Output directory
+└── tests/               // Test suite
 ```
 
 ## Theme System
@@ -108,7 +116,7 @@ pub struct ColorTheme {
 
 Available themes:
 - **Classic**: Navy + Burgundy
-- **Modern**: Electric Blue + Teal  
+- **Modern**: Electric Blue + Teal
 - **Sharp**: Deep Purple + Hot Pink
 
 ## Configuration Schema
@@ -119,21 +127,21 @@ pub struct Config {
     // Required
     pub name: String,
     pub email: String,
-    
+
     // Optional contact
     pub phone: Option<String>,
     pub location: Option<String>,
     pub linkedin: Option<String>,
     pub github: Option<String>,
     pub website: Option<String>,
-    
+
     // Themes
     pub font_theme: FontThemeType,
     pub color_theme: ColorThemeType,
-    
+
     // Layout
     pub layout: LayoutConfig,
-    
+
     // Cover letter specific
     pub recipient: Option<Recipient>,
     pub date: Option<String>,
@@ -180,7 +188,7 @@ pub struct Config {
 
 ### Performance Targets
 - < 100ms PDF generation
-- < 50ms HTML generation  
+- < 50ms HTML generation
 - < 10ms file watching latency
 - < 50MB binary size
 

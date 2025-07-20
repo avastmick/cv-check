@@ -70,29 +70,34 @@ Options:
 ### Module Structure
 
 ```rust
-cv-cli/
+cv_check/
 ├── src/
 │   ├── main.rs              // CLI entry point
-│   ├── cli.rs               // Command definitions
+│   ├── lib.rs               // Library exports
+│   ├── cli/                 // CLI module
+│   │   └── mod.rs           // Command definitions
 │   ├── config.rs            // Configuration handling
+│   ├── error.rs             // Error handling
 │   ├── parser/              // Markdown parsing
 │   │   ├── mod.rs
 │   │   ├── frontmatter.rs   // YAML extraction
-│   │   └── content.rs       // Content parsing
+│   │   └── markdown.rs      // Markdown parsing
 │   ├── themes/              // Theme engine
 │   │   ├── mod.rs
 │   │   ├── font.rs          // Font themes
-│   │   ├── color.rs         // Color themes
-│   │   └── loader.rs        // Theme loading
+│   │   └── color.rs         // Color themes
 │   ├── render/              // Document generation
 │   │   ├── mod.rs
 │   │   ├── pdf.rs           // PDF via Typst
 │   │   ├── docx.rs          // DOCX generation
 │   │   └── html.rs          // HTML output
-│   ├── watch.rs             // File watching
-│   └── error.rs             // Error handling
-├── templates/               // Built-in templates
-├── themes/                  // Built-in themes
+│   └── templates/           // Markdown templates
+│       ├── cv_template.md
+│       └── letter_template.md
+├── templates/               // Typst templates
+├── fonts/                   // TTF font files
+├── examples/                // Example documents
+├── cv/                      // Output directory
 └── tests/                   // Test suite
 ```
 
@@ -195,10 +200,10 @@ pub async fn watch(paths: Vec<PathBuf>, callback: impl Fn()) -> Result<()> {
 pub enum CvError {
     #[error("Missing required field '{field}' in {file}")]
     MissingField { field: String, file: PathBuf },
-    
+
     #[error("Unknown theme '{theme}'. Available: {available}")]
     UnknownTheme { theme: String, available: String },
-    
+
     #[error("Invalid markdown structure: {reason}")]
     InvalidMarkdown { reason: String },
 }
@@ -267,11 +272,11 @@ fn test_parse_frontmatter() {
 fn test_pdf_generation() {
     let temp = tempdir().unwrap();
     let output = temp.path().join("test.pdf");
-    
+
     cmd!("cv", "build", "fixtures/test.md", "-o", &output)
         .assert()
         .success();
-        
+
     assert!(output.exists());
 }
 ```
