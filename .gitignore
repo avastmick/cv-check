@@ -20,7 +20,7 @@ INSTRUCTIONS*
 
 # Test coverage
 tarpaulin-report.html
-./lcov.info
+lcov.info
 
 # Added by cargo
 /target
