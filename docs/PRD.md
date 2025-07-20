@@ -66,7 +66,6 @@ cv_check/
 │   ├── templates/        # Markdown templates
 │   ├── config.rs         # Configuration types
 │   └── error.rs          # Error handling
-├── templates/            # Typst templates
 ├── fonts/                # TTF font files
 ├── examples/             # Example documents
 ├── cv/                   # Output directory

@@ -94,7 +94,6 @@ cv_check/
 │   └── templates/           // Markdown templates
 │       ├── cv_template.md
 │       └── letter_template.md
-├── templates/               // Typst templates
 ├── fonts/                   // TTF font files
 ├── examples/                // Example documents
 ├── cv/                      // Output directory
@@ -250,7 +249,7 @@ auto_open: true
 ## Performance Considerations
 
 1. **Lazy Loading**: Load themes only when needed
-2. **Caching**: Cache compiled Typst templates
+2. **Caching**: Cache compiled Typst output
 3. **Parallelization**: Build multiple documents concurrently
 4. **Incremental Builds**: Only rebuild changed sections
 

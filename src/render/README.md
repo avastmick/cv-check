@@ -26,8 +26,8 @@ All format-specific renderers implement this trait, allowing for easy extension.
 
 #### `pdf.rs` - PDF Generation
 - Uses Typst for high-quality typesetting
-- Loads Typst templates from `templates/` directory
-- Supports custom template overrides
+- Generates Typst source code programmatically
+- Supports custom template overrides via `--template` flag
 - Handles font embedding and styling
 
 #### `docx.rs` - Word Document Generation
@@ -90,7 +90,6 @@ renderer.render(&doc, &theme, Path::new("output.pdf"))?;
 - `typst`: PDF generation engine
 - `docx-rs`: Word document creation (when implemented)
 - `pulldown-cmark`: Markdown to HTML conversion
-- Format-specific template files in `templates/`
 
 ## Adding a New Format
 
@@ -102,9 +101,8 @@ renderer.render(&doc, &theme, Path::new("output.pdf"))?;
 
 ## Template System
 
-Each renderer can use templates:
-- Default templates embedded in binary
-- Custom templates via `--template` flag
+- PDF renderer generates Typst source programmatically
+- Custom templates can be provided via `--template` flag
 - Templates receive document data and theme variables
 
 ## Performance Considerations

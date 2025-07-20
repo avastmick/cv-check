@@ -72,7 +72,6 @@ cv_check/
 │   │   └── letter_template.md
 │   ├── config.rs         // Configuration types
 │   └── error.rs          // Error handling
-├── templates/            // Typst templates
 ├── fonts/                // TTF font files
 ├── examples/             // Example documents
 ├── cv/                   // Output directory
@@ -153,8 +152,8 @@ pub struct Config {
 
 ### PDF Generation (Typst)
 
-1. Load Typst template from embedded resources
-2. Inject theme variables and content
+1. Generate Typst source code programmatically
+2. Apply theme variables and document content
 3. Compile to PDF using Typst library
 4. Write to output directory
 
