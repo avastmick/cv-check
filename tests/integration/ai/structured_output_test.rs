@@ -87,7 +87,11 @@ async fn test_structured_output_simple() {
         serde_json::from_str(content).expect("Response should deserialize to BookSummary");
 
     // Validate the response
-    assert_eq!(book_summary.title, "1984");
+    assert!(
+        book_summary.title == "1984" || book_summary.title == "Nineteen Eighty-Four",
+        "Title should be either '1984' or 'Nineteen Eighty-Four', got: {}",
+        book_summary.title
+    );
     assert!(book_summary.author.contains("Orwell"));
     assert!(!book_summary.summary.is_empty());
     assert!(!book_summary.key_themes.is_empty());

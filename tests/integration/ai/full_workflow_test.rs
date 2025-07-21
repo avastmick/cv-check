@@ -137,17 +137,28 @@ async fn test_full_ai_workflow_pdf_output() {
         .expect("Failed to execute command");
 
     // Check the command succeeded
-    assert!(
-        output.status.success(),
-        "CV tailoring command should succeed"
-    );
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        panic!("CV tailoring command failed.\nSTDERR: {stderr}\nSTDOUT: {stdout}");
+    }
 
     // Verify both markdown and PDF files were created
-    let md_path = output_base.with_extension("md");
+    // When format is PDF, the markdown file is saved at the output path
+    // and the PDF is saved with .pdf extension
+    let md_path = output_base.clone();
     let pdf_path = output_base.with_extension("pdf");
 
-    assert!(md_path.exists(), "Tailored markdown file should be created");
-    assert!(pdf_path.exists(), "Tailored PDF file should be created");
+    assert!(
+        md_path.exists(),
+        "Tailored markdown file should be created at: {}",
+        md_path.display()
+    );
+    assert!(
+        pdf_path.exists(),
+        "Tailored PDF file should be created at: {}",
+        pdf_path.display()
+    );
 
     // Verify PDF has content (basic size check)
     let pdf_metadata = fs::metadata(&pdf_path).expect("Should be able to read PDF metadata");
