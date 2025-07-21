@@ -415,6 +415,7 @@ dependencies = [
  "pdf-extract",
  "predicates",
  "pulldown-cmark",
+ "regex",
  "serde",
  "serde_json",
  "serde_yaml",

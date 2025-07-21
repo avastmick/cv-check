@@ -177,13 +177,16 @@ impl PdfRenderer {
         use crate::constants::markdown_options;
         use pulldown_cmark::{Event, Parser};
 
+        // Preprocess content to enhance company names
+        let enhanced_content = Self::enhance_company_names(content);
+
         let options = markdown_options();
-        let parser = Parser::new_ext(content, options);
+        let parser = Parser::new_ext(&enhanced_content, options);
         let mut render_ctx = RenderContext::new();
 
         for event in parser {
             match event {
-                Event::Start(tag) => Self::handle_start_tag(tag, output, &mut render_ctx),
+                Event::Start(tag) => Self::handle_start_tag(tag, output, &mut render_ctx, theme),
                 Event::End(tag) => Self::handle_end_tag(tag, output, theme, &mut render_ctx),
                 Event::Text(text) => Self::handle_text(&text, output),
                 Event::Code(code) => {
@@ -200,10 +203,40 @@ impl PdfRenderer {
         }
     }
 
+    fn enhance_company_names(content: &str) -> String {
+        // Replace pattern **Company** (Location) with H2 heading
+        let company_re = regex::Regex::new(r"(?m)^\*\*([^*]+)\*\*\s*\(([^)]+)\)\s*$")
+            .expect("Invalid company regex pattern");
+        let enhanced = company_re.replace_all(content, "## $1 ($2)");
+
+        // Replace pattern _Job Title_, Date with H3 heading - keep date on same line
+        let job_underscore_re = regex::Regex::new(r"(?m)^_([^_]+)_,\s*(.+)$")
+            .expect("Invalid job title underscore regex pattern");
+        let enhanced2 = job_underscore_re.replace_all(&enhanced, "### **$1**, $2");
+
+        // Also replace pattern *Job Title*, Date with H3 heading - keep date on same line
+        let job_asterisk_re = regex::Regex::new(r"(?m)^\*([^*]+)\*,\s*(.+)$")
+            .expect("Invalid job title asterisk regex pattern");
+        let enhanced3 = job_asterisk_re.replace_all(&enhanced2, "### **$1**, $2");
+
+        // Replace pattern _Degree/Title_ (without comma) for Education sections
+        let degree_underscore_re = regex::Regex::new(r"(?m)^_([^_]+)_\s*$")
+            .expect("Invalid degree underscore regex pattern");
+        let enhanced4 = degree_underscore_re.replace_all(&enhanced3, "### **$1**");
+
+        // Replace pattern *Degree/Title* (without comma) for Education sections
+        let degree_asterisk_re = regex::Regex::new(r"(?m)^\*([^*]+)\*\s*$")
+            .expect("Invalid degree asterisk regex pattern");
+        degree_asterisk_re
+            .replace_all(&enhanced4, "### **$1**")
+            .to_string()
+    }
+
     fn handle_start_tag(
         tag: pulldown_cmark::Tag,
         output: &mut String,
         context: &mut RenderContext,
+        theme: &Theme,
     ) {
         use pulldown_cmark::{HeadingLevel, Tag};
 
@@ -213,19 +246,32 @@ impl PdfRenderer {
                 context.heading_level = level;
                 match level {
                     HeadingLevel::H1 => {
+                        // Top-level sections (Experience, Education, Skills)
                         let _ = writeln!(output, "\n#v(1.5em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.5em)[");
+                        let _ = writeln!(output, "#block(above: 0em, below: 0.8em)[");
                         let _ = write!(output, "  #text(size: 16pt, weight: \"bold\")[");
                     }
                     HeadingLevel::H2 => {
+                        // Company/Organization names - make prominent
                         let _ = writeln!(output, "\n#v(1.2em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.4em)[");
-                        let _ = write!(output, "  #text(size: 13pt, weight: \"semibold\")[");
+                        let _ = writeln!(output, "#block(above: 0em, below: 0.8em)[");
+                        let _ = write!(
+                            output,
+                            "  #text(size: 14pt, weight: \"bold\", fill: {})[",
+                            theme.color.to_typst_rgb("primary")
+                        );
+                    }
+                    HeadingLevel::H3 => {
+                        // Job titles/roles - less prominent than company
+                        let _ = writeln!(output, "\n#v(0.8em)");
+                        let _ = writeln!(output, "#block(above: 0em, below: 0.6em)[");
+                        let _ = write!(output, "  #text(size: 12pt, weight: \"semibold\")[");
                     }
                     _ => {
-                        let _ = writeln!(output, "\n#v(1em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.3em)[");
-                        let _ = write!(output, "  #text(size: 12pt, weight: \"medium\")[");
+                        // H4, H5, H6 - rarely used
+                        let _ = writeln!(output, "\n#v(0.5em)");
+                        let _ = writeln!(output, "#block(above: 0em, below: 0.2em)[");
+                        let _ = write!(output, "  #text(size: 11pt, weight: \"medium\")[");
                     }
                 }
             }
@@ -282,6 +328,10 @@ impl PdfRenderer {
                         );
                     }
                     let _ = writeln!(output, "]");
+                    // Add extra space after H1 with line
+                    if matches!(context.heading_level, HeadingLevel::H1) {
+                        let _ = writeln!(output, "#v(0.2em)");
+                    }
                     context.in_heading = false;
                 }
             }
@@ -304,6 +354,10 @@ impl PdfRenderer {
             }
             TagEnd::CodeBlock => {
                 let _ = writeln!(output, "```");
+            }
+            TagEnd::Item => {
+                // Add line break after list item to ensure next item starts on new line
+                let _ = writeln!(output);
             }
             _ => {}
         }
