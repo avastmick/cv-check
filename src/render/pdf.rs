@@ -38,6 +38,14 @@ impl PdfRenderer {
         Ok(Self { template })
     }
 
+    /// Exposed for testing purposes only
+    #[doc(hidden)]
+    #[must_use]
+    #[allow(dead_code)] // `allow(dead_code)` exception
+    pub fn generate_typst_source_for_testing(&self, doc: &Document, theme: &Theme) -> String {
+        self.generate_typst_source(doc, theme)
+    }
+
     fn generate_typst_source(&self, doc: &Document, theme: &Theme) -> String {
         if let Some(template) = &self.template {
             // Custom template - just use it as-is
@@ -168,7 +176,12 @@ impl PdfRenderer {
 
         // Body content - convert markdown to Typst
         let _ = writeln!(source, "// Content");
-        Self::render_markdown_as_typst(&doc.content, &mut source, theme);
+        let mut typst_content = String::new();
+        Self::render_markdown_as_typst(&doc.content, &mut typst_content, theme);
+
+        // Post-process to wrap H2 sections in non-breakable blocks
+        let processed_content = Self::wrap_h2_sections(&typst_content);
+        source.push_str(&processed_content);
 
         source
     }
@@ -177,11 +190,12 @@ impl PdfRenderer {
         use crate::constants::markdown_options;
         use pulldown_cmark::{Event, Parser};
 
-        // Preprocess content to enhance company names
+        // Preprocess content to enhance company names and handle page breaks
         let enhanced_content = Self::enhance_company_names(content);
+        let content_with_pagebreaks = Self::process_pagebreak_markers(&enhanced_content);
 
         let options = markdown_options();
-        let parser = Parser::new_ext(&enhanced_content, options);
+        let parser = Parser::new_ext(&content_with_pagebreaks, options);
         let mut render_ctx = RenderContext::new();
 
         for event in parser {
@@ -198,9 +212,101 @@ impl PdfRenderer {
                 Event::HardBreak => {
                     let _ = writeln!(output);
                 }
+                Event::Html(html) => {
+                    // Handle HTML comments that might contain pagebreak markers
+                    if html.trim() == "<!-- pagebreak -->" {
+                        let _ = writeln!(output, "\n#pagebreak()\n");
+                    }
+                }
                 _ => {}
             }
         }
+    }
+
+    fn process_pagebreak_markers(content: &str) -> String {
+        // Replace \pagebreak with a unique marker that won't be escaped
+        content.replace("\\pagebreak", "TYPST_PAGEBREAK_MARKER")
+    }
+
+    fn wrap_h2_sections(content: &str) -> String {
+        // This method wraps content between H2 headings in non-breakable blocks
+        // to prevent job entries from splitting across pages
+
+        let mut result = String::new();
+        let mut in_h2_section = false;
+        let lines: Vec<&str> = content.lines().collect();
+        let mut i = 0;
+
+        while i < lines.len() {
+            let line = lines[i];
+
+            // If we encounter a pagebreak inside an H2 section, close the block first
+            if in_h2_section && line.contains("#pagebreak()") {
+                result.push_str("]  // End of job entry block before pagebreak\n\n");
+                result.push_str(line);
+                result.push('\n');
+                // Re-open the block after the pagebreak
+                result.push_str(
+                    "\n#block(breakable: false)[\n  // Continue job entry after pagebreak\n",
+                );
+                i += 1;
+                continue;
+            }
+
+            // Check if this is the start of an H2 section
+            if line.contains("#v(1.2em)")
+                && i + 1 < lines.len()
+                && lines[i + 1].contains("#block(above: 0em, below: 0.8em)[")
+            {
+                // Look ahead to confirm this is an H2
+                let mut is_h2 = false;
+                for check_line in lines.iter().skip(i + 2).take(3) {
+                    if check_line.contains("text(size: 14pt, weight: \"bold\"") {
+                        is_h2 = true;
+                        break;
+                    }
+                }
+
+                if is_h2 {
+                    // If we were already in an H2 section, close it
+                    if in_h2_section {
+                        result.push_str("]  // End of job entry block\n\n");
+                    }
+
+                    // Start a new non-breakable block
+                    result.push_str("#block(breakable: false)[\n  // Start of job entry\n");
+                    in_h2_section = true;
+                }
+            }
+
+            // Check if this is an H1 heading that would end the current H2 section
+            if in_h2_section
+                && line.contains("#v(1.5em)")
+                && i + 1 < lines.len()
+                && lines[i + 1].contains("#block(above: 0em, below: 0.8em)[")
+            {
+                // Look ahead to confirm this is an H1
+                for check_line in lines.iter().skip(i + 2).take(3) {
+                    if check_line.contains("text(size: 16pt, weight: \"bold\"") {
+                        // Close the current H2 section before the H1
+                        result.push_str("]  // End of job entry block\n\n");
+                        in_h2_section = false;
+                        break;
+                    }
+                }
+            }
+
+            result.push_str(line);
+            result.push('\n');
+            i += 1;
+        }
+
+        // Close any remaining open H2 section
+        if in_h2_section {
+            result.push_str("]  // End of job entry block\n");
+        }
+
+        result
     }
 
     fn enhance_company_names(content: &str) -> String {
@@ -364,6 +470,12 @@ impl PdfRenderer {
     }
 
     fn handle_text(text: &pulldown_cmark::CowStr, output: &mut String) {
+        // Check for pagebreak marker
+        if text.trim() == "TYPST_PAGEBREAK_MARKER" {
+            let _ = writeln!(output, "\n#pagebreak()\n");
+            return;
+        }
+
         let escaped = text
             .replace('@', "\\@")
             .replace('#', "\\#")

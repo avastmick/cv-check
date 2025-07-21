@@ -139,7 +139,7 @@ Select from our pre-designed themes:
 
 #### Font Themes
 - **classic**: Traditional serif fonts (Georgia/Times New Roman)
-- **modern**: Clean sans-serif fonts (Inter/Open Sans)  
+- **modern**: Clean sans-serif fonts (Inter/Open Sans)
 - **sharp**: Bold geometric fonts (Montserrat/Roboto)
 
 #### Color Themes
@@ -248,6 +248,36 @@ Use standard Markdown formatting:
 2. Design architecture
 3. Implement solution
 ```
+
+### Page Breaks
+
+Control page layout using manual page break markers:
+
+```markdown
+# Experience
+
+## Senior Engineer
+**Company A** | *2020 - Present*
+
+- Achievement 1
+- Achievement 2
+
+<!-- pagebreak -->
+
+## Previous Role
+**Company B** | *2018 - 2020*
+
+- Achievement 1
+- Achievement 2
+```
+
+**Supported page break markers:**
+- `<!-- pagebreak -->` - HTML comment style (recommended)
+- `\pagebreak` - LaTeX style
+
+**Note on automatic page breaks:**
+- Currently, Typst will automatically handle page breaks based on available space
+- Manual page break markers can be used to force breaks at specific locations
 
 ## Tips and Best Practices
 
