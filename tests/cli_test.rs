@@ -174,7 +174,7 @@ fn test_build_with_invalid_input_stem() {
         format: "html", // Test non-pdf format
         template: None,
         verbose: false,
-        quiet: false,
+        quiet: true, // Prevent auto-opening in tests
     };
 
     // Should handle files with no proper stem
@@ -199,7 +199,7 @@ fn test_open_file_auto_open_disabled() {
         format: "pdf",
         template: None,
         verbose: false,
-        quiet: false, // Not quiet, but auto_open might be disabled in config
+        quiet: true, // Prevent auto-opening in tests
     };
 
     // The build will handle auto_open based on config

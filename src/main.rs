@@ -1,8 +1,10 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use colored::Colorize;
+use log::{error, info};
 use std::path::PathBuf;
 
+mod ai;
 mod cli;
 mod config;
 mod constants;
@@ -11,7 +13,7 @@ mod parser;
 mod render;
 mod themes;
 
-use crate::cli::{BuildOptions, CvGenerator};
+use crate::cli::{BuildOptions, CvGenerator, TailorOptions};
 
 /// Modern CV and cover letter generator with themeable output
 #[derive(Parser)]
@@ -95,6 +97,41 @@ enum Commands {
         #[arg(short, long, default_value = "8080")]
         port: u16,
     },
+
+    /// Tailor CV for a specific job description using AI
+    Tailor {
+        /// Input CV markdown file (.md)
+        #[arg(short, long)]
+        cv: PathBuf,
+
+        /// Job description PDF file (.pdf)
+        #[arg(short, long)]
+        job_description: PathBuf,
+
+        /// Output markdown file for tailored CV
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+
+        /// Font theme (classic, modern, sharp)
+        #[arg(short, long, default_value = crate::constants::DEFAULT_THEME)]
+        font_theme: String,
+
+        /// Color theme (classic, modern, sharp)
+        #[arg(short = 'C', long, default_value = crate::constants::DEFAULT_THEME)]
+        color_theme: String,
+
+        /// Output format (pdf, docx, html, md)
+        #[arg(short = 'F', long, default_value = "pdf")]
+        format: String,
+
+        /// Verbose output
+        #[arg(short, long)]
+        verbose: bool,
+
+        /// Suppress output
+        #[arg(short, long)]
+        quiet: bool,
+    },
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -103,7 +140,11 @@ enum NewDocType {
     Letter,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Initialize logger - will use RUST_LOG environment variable
+    env_logger::init();
+
     let cli = Cli::parse();
 
     let generator = CvGenerator::new()?;
@@ -120,7 +161,7 @@ fn main() -> Result<()> {
             quiet,
         } => {
             if verbose {
-                println!("{}", "Building document...".blue());
+                info!("{}", "Building document...".blue());
             }
 
             generator.build(&BuildOptions {
@@ -135,7 +176,7 @@ fn main() -> Result<()> {
             })?;
 
             if !quiet {
-                println!("{}", "✓ Document generated successfully!".green());
+                info!("{}", "✓ Document generated successfully!".green());
             }
         }
 
@@ -144,7 +185,7 @@ fn main() -> Result<()> {
                 NewDocType::Cv => CvGenerator::new_cv(&output)?,
                 NewDocType::Letter => CvGenerator::new_letter(&output)?,
             }
-            println!("{} Created {} template", "✓".green(), output.display());
+            info!("{} Created {} template", "✓".green(), output.display());
         }
 
         Commands::Themes { fonts, colors } => {
@@ -158,12 +199,57 @@ fn main() -> Result<()> {
 
         Commands::Check { input } => {
             CvGenerator::check(&input)?;
-            println!("{} {} is valid!", "✓".green(), input.display());
+            info!("{} {} is valid!", "✓".green(), input.display());
         }
 
         Commands::Serve { input, port } => {
-            println!("{} Preview server at http://localhost:{}", "→".blue(), port);
+            info!("{} Preview server at http://localhost:{}", "→".blue(), port);
             CvGenerator::serve(&input, port);
+        }
+
+        Commands::Tailor {
+            cv,
+            job_description,
+            output,
+            font_theme,
+            color_theme,
+            format,
+            verbose,
+            quiet,
+        } => {
+            if !quiet {
+                info!("{} Tailoring CV to job description using AI...", "→".blue());
+            }
+
+            if let Err(e) = generator
+                .tailor(&TailorOptions {
+                    cv_path: &cv,
+                    job_description_path: &job_description,
+                    output: output.as_deref(),
+                    font_theme: &font_theme,
+                    color_theme: &color_theme,
+                    format: &format,
+                    verbose,
+                    quiet,
+                })
+                .await
+            {
+                error!("Error during CV tailoring: {e}");
+
+                // Check if it's a JSON parsing error
+                if let Some(source) = e.source() {
+                    error!("Caused by: {source}");
+                    if let Some(inner) = source.source() {
+                        error!("Inner error: {inner}");
+                    }
+                }
+
+                return Err(e);
+            }
+
+            if !quiet {
+                info!("{} CV successfully tailored!", "✓".green());
+            }
         }
     }
 

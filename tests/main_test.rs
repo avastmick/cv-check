@@ -60,9 +60,10 @@ fn test_new_cv_command() {
 
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["new", "cv", output_path.to_str().expect("Invalid path")])
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Created"));
+        .stderr(predicate::str::contains("Created"));
 
     assert!(output_path.exists());
     let content = fs::read_to_string(&output_path).expect("Failed to read created file");
@@ -77,9 +78,10 @@ fn test_new_letter_command() {
 
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["new", "letter", output_path.to_str().expect("Invalid path")])
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Created"));
+        .stderr(predicate::str::contains("Created"));
 
     assert!(output_path.exists());
     let content = fs::read_to_string(&output_path).expect("Failed to read created file");
@@ -90,30 +92,33 @@ fn test_new_letter_command() {
 fn test_themes_command() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.arg("themes")
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Font Themes"))
-        .stdout(predicate::str::contains("Color Themes"));
+        .stderr(predicate::str::contains("Font Themes"))
+        .stderr(predicate::str::contains("Color Themes"));
 }
 
 #[test]
 fn test_themes_fonts_only() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["themes", "--fonts"])
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Font Themes"))
-        .stdout(predicate::str::contains("Classic").not());
+        .stderr(predicate::str::contains("Font Themes"))
+        .stderr(predicate::str::contains("Classic").not());
 }
 
 #[test]
 fn test_themes_colors_only() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["themes", "--colors"])
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Color Themes"))
-        .stdout(predicate::str::contains("Font Themes").not());
+        .stderr(predicate::str::contains("Color Themes"))
+        .stderr(predicate::str::contains("Font Themes").not());
 }
 
 #[test]
@@ -135,9 +140,10 @@ email: john@example.com
 
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["check", test_file.to_str().expect("Invalid path")])
+        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stdout(predicate::str::contains("is valid!"));
+        .stderr(predicate::str::contains("is valid!"));
 }
 
 #[test]
@@ -296,9 +302,10 @@ fn test_build_with_verbose() {
         "--verbose",
         "--quiet",
     ])
+    .env("RUST_LOG", "info")
     .assert()
     .success()
-    .stdout(predicate::str::contains("Building document..."));
+    .stderr(predicate::str::contains("Building document..."));
 
     // Verify PDF was created and has substantial content
     assert!(output_path.exists(), "PDF should be created");
@@ -368,9 +375,10 @@ email: test@example.com
         "--port",
         "9999",
     ])
+    .env("RUST_LOG", "info")
     .assert()
     .success()
-    .stdout(predicate::str::contains(
+    .stderr(predicate::str::contains(
         "Preview server at http://localhost:9999",
     ));
 }
