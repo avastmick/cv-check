@@ -1,6 +1,6 @@
 # CV Generator
 
-A modern, Rust-based command-line tool for generating professional CVs and cover letters from Markdown files with YAML frontmatter.
+A modern, Rust-based command-line tool for generating professional CVs and cover letters from Markdown files with YAML frontmatter. Now with AI-powered CV tailoring to optimize your CV for specific job descriptions.
 
 ## Features
 
@@ -11,6 +11,9 @@ A modern, Rust-based command-line tool for generating professional CVs and cover
 - **Live Reload**: Auto-rebuild on file changes with `watch` command
 - **Fast**: Sub-second PDF generation with Typst
 - **Zero Configuration**: Works out of the box with sensible defaults
+- **🆕 AI-Powered Tailoring**: Automatically optimize your CV for specific job descriptions
+- **🆕 Keyword Optimization**: Extract and incorporate relevant keywords from job postings
+- **🆕 ATS-Friendly**: Ensure your CV passes Applicant Tracking Systems
 
 ## Prerequisites
 
@@ -27,6 +30,19 @@ brew install typst
 
 # Cross-platform via cargo
 cargo install typst-cli
+```
+
+### AI Features (Optional)
+
+For AI-powered CV tailoring, you'll need:
+
+1. An OpenAI API key or compatible API endpoint
+2. Set environment variables:
+
+```bash
+export AI_ENDPOINT="https://api.openai.com/v1"  # Or your API endpoint
+export AI_MODEL="gpt-4o-2024-08-06"            # Model with structured outputs
+export AI_API_KEY="your-api-key-here"           # Your API key
 ```
 
 ## Installation
@@ -81,6 +97,7 @@ cv new cv                   # Create CV template
 cv new letter              # Create letter template
 cv themes                  # List available themes
 cv check <input.md>        # Validate markdown structure
+cv tailor <cv.md> <job.pdf> # AI-powered CV tailoring (requires API key)
 ```
 
 ## Themes
@@ -153,6 +170,37 @@ colors:
 ---
 ```
 
+## AI-Powered CV Tailoring
+
+The `tailor` command uses AI to optimize your CV for specific job descriptions:
+
+```bash
+# Tailor your CV to a job description
+cv tailor my-cv.md job-description.pdf
+
+# Output: my-cv-tailored.md (optimized markdown)
+#         my-cv-tailored.pdf (ready-to-send PDF)
+```
+
+### How it works:
+
+1. **Extracts text** from the job description PDF
+2. **Analyzes requirements** using AI with HR expertise
+3. **Optimizes your CV** by:
+   - Reordering experiences to match job priorities
+   - Emphasizing relevant skills and keywords
+   - Adjusting professional summary
+   - Ensuring ATS compatibility
+4. **Generates tailored output** maintaining your chosen theme
+
+### Supported AI Providers:
+
+- OpenAI (GPT-4o models)
+- Azure OpenAI
+- Any OpenAI-compatible API
+
+The AI uses structured outputs to ensure reliable, consistent results.
+
 ## Development
 
 ```bash
@@ -181,6 +229,11 @@ cv_check/
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
 │   ├── templates/        # Markdown templates
+│   ├── ai/               # AI integration (Phase 2)
+│   │   ├── client.rs     # OpenAI API client
+│   │   ├── pdf_parser.rs # PDF text extraction
+│   │   ├── prompts.rs    # AI prompts
+│   │   └── schemas.rs    # Structured outputs
 │   ├── config.rs         # Configuration types
 │   └── error.rs          # Error handling
 ├── fonts/                # TTF font files

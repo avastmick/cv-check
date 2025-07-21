@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes.
+A Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. Phase 2 introduces AI-powered CV tailoring to optimize content for specific job descriptions.
 
 ## Core Principles
 
@@ -11,6 +11,8 @@ A Rust-based command-line tool that converts Markdown files with YAML frontmatte
 3. **Quality**: Zero unsafe code, comprehensive error handling
 4. **Extensibility**: Theme system for fonts and colors
 5. **Portability**: Single binary with embedded assets
+6. **Intelligence**: AI-powered optimization using structured outputs
+7. **Reliability**: Deterministic AI responses via JSON schemas
 
 ## System Architecture
 
@@ -26,24 +28,41 @@ A Rust-based command-line tool that converts Markdown files with YAML frontmatte
 │  - new          │     └─────────────────┘     └─────────────────┘
 │  - check        │              │                       │
 │  - themes       │              ▼                       ▼
-└─────────────────┘     ┌─────────────────┐     ┌─────────────────┐
-         │              │     Config      │     │     Themes      │
+│  - tailor       │     ┌─────────────────┐     ┌─────────────────┐
+└─────────────────┘     │     Config      │     │     Themes      │
          │              │   Management    │     │   (embedded)    │
-         ▼              └─────────────────┘     └─────────────────┘
-┌─────────────────┐
-│   File Watch    │
-│   (notify)      │
-└─────────────────┘
+         │              └─────────────────┘     └─────────────────┘
+         ▼
+┌─────────────────┐     ┌─────────────────┐
+│   File Watch    │     │   AI Module     │
+│   (notify)      │     │  (Phase 2)      │
+└─────────────────┘     │                 │
+                        │  - PDF Parser   │
+                        │  - LLM Client   │
+                        │  - Prompts      │
+                        │  - Schemas      │
+                        └─────────────────┘
 ```
 
 ### Data Flow
 
+#### Standard Flow (build command)
 1. **Input**: Markdown file with YAML frontmatter
 2. **Parsing**: Extract metadata and content sections
 3. **Validation**: Check required fields and structure
 4. **Theme Application**: Apply font and color themes
 5. **Rendering**: Generate output in requested format
 6. **Output**: PDF/DOCX/HTML files
+
+#### AI-Powered Flow (tailor command)
+1. **Inputs**: Base CV markdown + Job description PDF
+2. **PDF Extraction**: Extract text from job description
+3. **AI Processing**:
+   - Send CV + JD to LLM with HR expertise prompt
+   - Receive structured JSON response
+   - Validate against predefined schema
+4. **CV Optimization**: Apply AI suggestions to CV content
+5. **Standard Flow**: Continue with steps 2-6 above
 
 ## Module Structure
 
@@ -67,6 +86,12 @@ cv_check/
 │   │   ├── mod.rs        // Theme management
 │   │   ├── font.rs       // Font themes
 │   │   └── color.rs      // Color themes
+│   ├── ai/               // AI integration (Phase 2)
+│   │   ├── mod.rs        // AI module interface
+│   │   ├── client.rs     // OpenAI-compatible API client
+│   │   ├── pdf_parser.rs // PDF text extraction
+│   │   ├── prompts.rs    // AI prompt engineering
+│   │   └── schemas.rs    // Structured output schemas
 │   ├── templates/        // Markdown templates
 │   │   ├── cv_template.md
 │   │   └── letter_template.md
@@ -148,6 +173,71 @@ pub struct Config {
 }
 ```
 
+## AI Module Architecture (Phase 2)
+
+### Components
+
+```rust
+pub mod ai {
+    pub mod client;      // OpenAI API client wrapper
+    pub mod pdf_parser;  // PDF text extraction
+    pub mod prompts;     // Prompt templates
+    pub mod schemas;     // JSON schema definitions
+}
+```
+
+### AI Client Design
+
+```rust
+pub struct AIClient {
+    endpoint: String,
+    api_key: String,
+    model: String,
+    client: reqwest::Client,
+}
+
+impl AIClient {
+    pub async fn tailor_cv(
+        &self,
+        cv_content: &str,
+        job_description: &str
+    ) -> Result<TailoredCV> {
+        // Send structured request
+        // Receive and validate response
+    }
+}
+```
+
+### Structured Output Schemas
+
+```rust
+#[derive(Serialize, Deserialize)]
+pub struct TailoredCV {
+    pub professional_summary: String,
+    pub experiences: Vec<OptimizedExperience>,
+    pub skills: Vec<String>,
+    pub keywords: Vec<String>,
+    pub suggestions: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct OptimizedExperience {
+    pub title: String,
+    pub company: String,
+    pub duration: String,
+    pub highlights: Vec<String>,
+    pub relevance_score: f32,
+}
+```
+
+### Prompt Engineering
+
+The system uses a carefully crafted prompt that:
+1. Establishes the AI as an expert HR professional
+2. Provides clear instructions for CV optimization
+3. Specifies the exact JSON schema for responses
+4. Includes examples of good tailoring practices
+
 ## Rendering Pipeline
 
 ### PDF Generation (Typst)
@@ -198,11 +288,18 @@ pub struct Config {
 3. **Template Injection**: Escape all user content
 4. **Dependencies**: Minimal, audited dependencies
 5. **Binary Distribution**: Signed releases
+6. **API Keys**: Never log or expose API credentials
+7. **PDF Parsing**: Validate PDF content before processing
+8. **AI Responses**: Validate all AI output against schemas
 
 ## Future Enhancements
 
 1. **Web Preview Server**: Live preview with hot reload
-2. **ATS Optimization**: Resume scoring and suggestions
+2. **Enhanced AI Features**:
+   - Cover letter generation
+   - Interview preparation based on CV/JD match
+   - Multiple CV versions for different roles
 3. **Template Library**: Additional document types
 4. **Cloud Export**: Direct upload to job sites
 5. **GUI Wrapper**: Native desktop application
+6. **Analytics**: Track application success rates

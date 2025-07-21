@@ -13,6 +13,7 @@ fonts/
 
 # Sensitive
 .env**
+!.envrc.example
 
 # Testing
 resume.md

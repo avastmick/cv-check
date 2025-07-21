@@ -2,15 +2,15 @@
 
 ## Overview
 
-A modern, Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes.
+A modern, Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. In Phase 2, the tool leverages generative AI to automatically tailor CVs to specific job descriptions, optimizing content, keywords, and layout for maximum job application success.
 
 ### Goal
 
 The application will iterate on additional features until the following features exist:
-- [-] Markdown CV to professionally typeset PDF output
+- [x] Markdown CV to professionally typeset PDF output
 - [ ] Additional MS Word (`.docx`) output
-- [ ] Simple, multiple, impactfull, themeing
-- [ ] Align output CV keywords and experience to input **Job Description** with Generative AI assistance
+- [x] Simple, multiple, impactfull, themeing
+- [🚧] Align output CV keywords and experience to input **Job Description** with Generative AI assistance
 - [ ] Fully aligned generated Cover Letter to input **Job Description** with Generative AI assistance
 - [ ] Static site generation for CV including themeing and deployment
 
@@ -20,6 +20,7 @@ The application will iterate on additional features until the following features
 - **Markdown files** with YAML frontmatter for metadata
 - **Validation** via `check` command ensures proper structure
 - **Live reload** with file watching for rapid iteration
+- **PDF Job Descriptions** (Phase 2) for AI-powered CV tailoring
 
 ### Output Formats
 - **PDF**: Professional typesetting via Typst
@@ -42,6 +43,14 @@ The application will iterate on additional features until the following features
 - **Two column**: Compact layout for longer CVs
 - **Summary mode**: One-page condensed version
 
+### AI-Powered Features (Phase 2)
+- **CV Tailoring**: Automatically optimize CV content for specific job descriptions
+- **Keyword Optimization**: Extract and incorporate relevant keywords from job descriptions
+- **Experience Alignment**: Reorder and emphasize experiences matching job requirements
+- **Skills Matching**: Highlight skills that align with job requirements
+- **ATS Optimization**: Ensure CV passes Applicant Tracking Systems
+- **Structured Output**: Use OpenAI-compatible API with JSON schema validation
+
 ## Technical Architecture
 
 ### CLI Commands
@@ -52,6 +61,7 @@ cv new cv                   # Create CV template
 cv new letter              # Create letter template
 cv themes                  # List available themes
 cv check <input.md>        # Validate markdown structure
+cv tailor <cv.md> <job.pdf> # AI-powered CV tailoring (Phase 2)
 cv serve <input.md>        # Preview server (planned)
 ```
 
@@ -64,6 +74,11 @@ cv_check/
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
 │   ├── templates/        # Markdown templates
+│   ├── ai/               # AI integration (Phase 2)
+│   │   ├── client.rs     # OpenAI-compatible API client
+│   │   ├── pdf_parser.rs # PDF text extraction
+│   │   ├── prompts.rs    # AI prompt engineering
+│   │   └── schemas.rs    # Structured output schemas
 │   ├── config.rs         # Configuration types
 │   └── error.rs          # Error handling
 ├── fonts/                # TTF font files
@@ -107,6 +122,27 @@ recipient:
 date: string
 subject: string
 ```
+
+### AI Configuration (Phase 2)
+The AI integration uses environment variables for configuration:
+
+```bash
+# Required environment variables
+AI_ENDPOINT=https://api.openai.com/v1  # OpenAI-compatible API endpoint
+AI_MODEL=gpt-4o-2024-08-06            # Model supporting structured outputs
+AI_API_KEY=your-api-key-here          # API authentication key
+```
+
+**Supported AI Providers:**
+- OpenAI (GPT-4o models with structured outputs)
+- Any OpenAI-compatible API (Azure OpenAI, local LLMs, etc.)
+
+**AI Processing Pipeline:**
+1. Extract text from PDF job description
+2. Parse base CV markdown and frontmatter
+3. Send to LLM with expert HR prompt
+4. Receive structured JSON response with tailored content
+5. Generate optimized CV output
 
 ## Quality Standards
 
@@ -166,21 +202,34 @@ cargo install cv_check
 ### 🚧 In Progress
 - Typst integration for PDF generation
 - Template embedding in binary
+- AI-powered CV tailoring (Phase 2)
+  - PDF text extraction from job descriptions
+  - OpenAI API integration with structured outputs
+  - Prompt engineering for HR expertise
+  - JSON schema definitions for CV optimization
 
 ### 📋 Planned
 - DOCX export implementation
 - HTML preview server
 - Additional themes
+- Cover letter AI generation
 - GUI wrapper (future)
 
 ## Dependencies
 
+### Core Dependencies
 - **typst**: Modern typesetting engine
 - **clap**: CLI argument parsing
 - **serde**: YAML/JSON serialization
 - **pulldown-cmark**: Markdown parsing
 - **notify**: File system watching
 - **colored**: Terminal output styling
+
+### Phase 2 Dependencies
+- **openai-api-rs**: OpenAI-compatible API client
+- **pdf-extract** or **lopdf**: PDF text extraction
+- **serde_json**: Structured JSON handling
+- **tokio**: Async runtime for API calls
 
 ## Non-Goals
 
@@ -192,6 +241,9 @@ cargo install cv_check
 ## Constraints
 
 - Must maintain professional typesetting quality
-- Must work offline (no external API dependencies)
+- Phase 1 must work offline (no external API dependencies)
+- Phase 2 AI features require internet connection and API key
 - Must be installable as single binary
 - Must respect user privacy (no telemetry)
+- AI processing must use structured outputs for reliability
+- PDF parsing must handle various job description formats

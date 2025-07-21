@@ -1,0 +1,4 @@
+# Enter your configuration here
+export AI_ENDPOINT="https://the-chosen-provider-endpoint/api/v1"
+export AI_API_KEY="you-ai-provider-api-key"
+export AI_MODEL="your-chosen-model"
