@@ -1,6 +1,6 @@
-use cv_gen::parser::Document;
-use cv_gen::render::{pdf::PdfRenderer, RenderEngine};
-use cv_gen::themes::Theme;
+use cv_check::parser::Document;
+use cv_check::render::{pdf::PdfRenderer, RenderEngine};
+use cv_check::themes::Theme;
 use pdf_extract::extract_text;
 use std::fs;
 use std::path::Path;

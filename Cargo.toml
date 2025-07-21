@@ -25,7 +25,7 @@ tempfile = "3.20.0"
 thiserror = "2.0.12"
 
 [lib]
-name = "cv_gen"
+name = "cv_check"
 path = "src/lib.rs"
 
 [[bin]]

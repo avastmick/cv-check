@@ -1,7 +1,7 @@
-use cv_gen::config::DocumentMetadata;
-use cv_gen::parser::Document;
-use cv_gen::render::{pdf::PdfRenderer, RenderEngine};
-use cv_gen::themes::Theme;
+use cv_check::config::DocumentMetadata;
+use cv_check::parser::Document;
+use cv_check::render::{pdf::PdfRenderer, RenderEngine};
+use cv_check::themes::Theme;
 use pdf_extract::extract_text;
 use std::fs;
 use std::path::Path;
@@ -42,14 +42,14 @@ fn create_test_document() -> Document {
             website: None,
             font_theme: "modern".to_string(),
             color_theme: "modern".to_string(),
-            layout: cv_gen::config::LayoutOptions::default(),
+            layout: cv_check::config::LayoutOptions::default(),
             recipient: None,
             date: None,
             subject: None,
             custom: std::collections::HashMap::new(),
         },
         content: content.to_string(),
-        markdown_ast: cv_gen::parser::markdown::parse_markdown(content),
+        markdown_ast: cv_check::parser::markdown::parse_markdown(content),
     }
 }
 
@@ -167,7 +167,7 @@ fn test_pdf_with_minimal_content() {
     doc.metadata.phone = None;
     doc.metadata.location = None;
     doc.content = "Short content".to_string();
-    doc.markdown_ast = cv_gen::parser::markdown::parse_markdown(&doc.content);
+    doc.markdown_ast = cv_check::parser::markdown::parse_markdown(&doc.content);
 
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
     let theme = Theme::new("modern", "modern").expect("Failed to create theme");
@@ -201,7 +201,7 @@ fn test_pdf_with_unicode_content() {
     let mut doc = create_test_document();
     doc.metadata.name = "José García".to_string();
     doc.content = "Experiência em programação • Développement • 开发经验".to_string();
-    doc.markdown_ast = cv_gen::parser::markdown::parse_markdown(&doc.content);
+    doc.markdown_ast = cv_check::parser::markdown::parse_markdown(&doc.content);
 
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
     let theme = Theme::new("modern", "modern").expect("Failed to create theme");

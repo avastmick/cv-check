@@ -1,5 +1,5 @@
 use approx::assert_abs_diff_eq;
-use cv_gen::config::{DocumentMetadata, GlobalConfig, LayoutOptions, Margins, RecipientInfo};
+use cv_check::config::{DocumentMetadata, GlobalConfig, LayoutOptions, Margins, RecipientInfo};
 use serde_yaml::Value;
 use std::collections::HashMap;
 
@@ -300,4 +300,153 @@ fn test_recipient_info_minimal() {
     assert!(recipient.title.is_none());
     assert!(recipient.company.is_none());
     assert!(recipient.address.is_none());
+}
+
+#[test]
+fn test_document_metadata_empty_name_email() {
+    // Test edge case where name or email might be empty strings
+    let metadata = DocumentMetadata {
+        name: String::new(),
+        email: String::new(),
+        phone: None,
+        location: None,
+        linkedin: None,
+        github: None,
+        website: None,
+        font_theme: "modern".to_string(),
+        color_theme: "modern".to_string(),
+        layout: LayoutOptions::default(),
+        recipient: None,
+        date: None,
+        subject: None,
+        custom: HashMap::new(),
+    };
+
+    // Empty strings are allowed in the struct, validation happens elsewhere
+    assert_eq!(metadata.name, "");
+    assert_eq!(metadata.email, "");
+}
+
+#[test]
+fn test_margins_extreme_values() {
+    let margins = Margins {
+        top: 0.0,
+        bottom: 0.0,
+        left: 100.0,
+        right: 100.0,
+    };
+
+    assert_abs_diff_eq!(margins.top, 0.0);
+    assert_abs_diff_eq!(margins.bottom, 0.0);
+    assert_abs_diff_eq!(margins.left, 100.0);
+    assert_abs_diff_eq!(margins.right, 100.0);
+}
+
+#[test]
+fn test_layout_options_zero_columns() {
+    let layout = LayoutOptions {
+        columns: 0, // Edge case
+        margins: Margins::default(),
+        sidebar: None,
+    };
+
+    assert_eq!(layout.columns, 0);
+}
+
+#[test]
+fn test_global_config_partial() {
+    // Test that GlobalConfig handles partial config files
+    let partial_config = GlobalConfig {
+        default_font_theme: None,
+        default_color_theme: Some("sharp".to_string()),
+        pdf_engine: None,
+        custom_themes_dir: None,
+        output_dir: None,
+        auto_open: None,
+    };
+
+    assert!(partial_config.default_font_theme.is_none());
+    assert_eq!(
+        partial_config.default_color_theme,
+        Some("sharp".to_string())
+    );
+    assert!(partial_config.pdf_engine.is_none());
+    assert!(partial_config.auto_open.is_none());
+}
+
+#[test]
+fn test_document_metadata_invalid_theme_names() {
+    // Test metadata with potentially invalid theme names
+    let metadata = DocumentMetadata {
+        name: "Test".to_string(),
+        email: "test@test.com".to_string(),
+        phone: None,
+        location: None,
+        linkedin: None,
+        github: None,
+        website: None,
+        font_theme: "nonexistent-theme".to_string(),
+        color_theme: String::new(), // Empty theme name
+        layout: LayoutOptions::default(),
+        recipient: None,
+        date: None,
+        subject: None,
+        custom: HashMap::new(),
+    };
+
+    // The struct itself accepts any string, validation happens in theme loading
+    assert_eq!(metadata.font_theme, "nonexistent-theme");
+    assert_eq!(metadata.color_theme, "");
+}
+
+#[test]
+fn test_custom_fields_with_nested_values() {
+    let mut custom_fields = HashMap::new();
+
+    // Create nested YAML values
+    let skills = vec![
+        Value::String("Rust".to_string()),
+        Value::String("Python".to_string()),
+        Value::String("JavaScript".to_string()),
+    ];
+    custom_fields.insert("skills".to_string(), Value::Sequence(skills));
+
+    let mut certifications = serde_yaml::Mapping::new();
+    certifications.insert(
+        Value::String("AWS".to_string()),
+        Value::String("Solutions Architect".to_string()),
+    );
+    certifications.insert(
+        Value::String("Google".to_string()),
+        Value::String("Cloud Engineer".to_string()),
+    );
+    custom_fields.insert("certifications".to_string(), Value::Mapping(certifications));
+
+    let metadata = DocumentMetadata {
+        name: "Test".to_string(),
+        email: "test@test.com".to_string(),
+        phone: None,
+        location: None,
+        linkedin: None,
+        github: None,
+        website: None,
+        font_theme: "modern".to_string(),
+        color_theme: "modern".to_string(),
+        layout: LayoutOptions::default(),
+        recipient: None,
+        date: None,
+        subject: None,
+        custom: custom_fields,
+    };
+
+    // Verify nested structures are preserved
+    assert_eq!(metadata.custom.len(), 2);
+    assert!(matches!(
+        metadata.custom.get("skills"),
+        Some(Value::Sequence(_))
+    ));
+    assert!(matches!(
+        metadata.custom.get("certifications"),
+        Some(Value::Mapping(_))
+    ));
 }

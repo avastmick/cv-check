@@ -1,7 +1,7 @@
-use cv_gen::config::DocumentMetadata;
-use cv_gen::parser::Document;
-use cv_gen::render::{pdf::PdfRenderer, RenderEngine};
-use cv_gen::themes::Theme;
+use cv_check::config::DocumentMetadata;
+use cv_check::parser::Document;
+use cv_check::render::{pdf::PdfRenderer, RenderEngine};
+use cv_check::themes::Theme;
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -41,14 +41,14 @@ Experienced software engineer with 10+ years building scalable applications.
             website: Some("https://johndoe.com".to_string()),
             font_theme: "modern".to_string(),
             color_theme: "modern".to_string(),
-            layout: cv_gen::config::LayoutOptions::default(),
+            layout: cv_check::config::LayoutOptions::default(),
             recipient: None,
             date: None,
             subject: None,
             custom: std::collections::HashMap::new(),
         },
         content: content.to_string(),
-        markdown_ast: cv_gen::parser::markdown::parse_markdown(content),
+        markdown_ast: cv_check::parser::markdown::parse_markdown(content),
     }
 }
 
@@ -90,12 +90,12 @@ fn test_pdf_renderer_with_custom_template() {
 #let cv(name: "", email: "", body) = {
   set document(title: name)
   set text(font: "Arial", size: 12pt)
-  
+
   align(center)[
     #text(size: 24pt, weight: "bold")[#name]
     #email
   ]
-  
+
   body
 }
 "#,
@@ -123,7 +123,7 @@ fn test_pdf_renderer_handles_special_characters() {
     doc.metadata.name = "Jean-François O'Malley".to_string();
     let new_content = "# Summary\n\nExperience with \"special\" characters & symbols like <>&{}.";
     doc.content = new_content.to_string();
-    doc.markdown_ast = cv_gen::parser::markdown::parse_markdown(new_content);
+    doc.markdown_ast = cv_check::parser::markdown::parse_markdown(new_content);
 
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
     let theme = create_test_theme();

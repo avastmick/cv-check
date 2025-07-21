@@ -1,9 +1,9 @@
-use cv_gen::parser::Document;
-use cv_gen::render::docx::DocxRenderer;
-use cv_gen::render::html::HtmlRenderer;
-use cv_gen::render::pdf::PdfRenderer;
-use cv_gen::render::{RenderEngine, Renderer};
-use cv_gen::themes::Theme;
+use cv_check::parser::Document;
+use cv_check::render::docx::DocxRenderer;
+use cv_check::render::html::HtmlRenderer;
+use cv_check::render::pdf::PdfRenderer;
+use cv_check::render::{RenderEngine, Renderer};
+use cv_check::themes::Theme;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;

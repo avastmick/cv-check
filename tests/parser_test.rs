@@ -1,5 +1,5 @@
 use approx::assert_abs_diff_eq;
-use cv_gen::parser::{frontmatter, markdown, Document};
+use cv_check::parser::{frontmatter, markdown, Document};
 use std::path::PathBuf;
 
 #[test]
@@ -122,4 +122,190 @@ Content";
 
     let result = frontmatter::parse_frontmatter(content, &PathBuf::from("test.md"));
     assert!(result.is_err());
+}
+
+#[test]
+fn test_unclosed_frontmatter() {
+    let content = r"---
+name: Test User
+email: test@example.com
+# Missing closing delimiter
+Content here";
+
+    let result = frontmatter::parse_frontmatter(content, &PathBuf::from("test.md"));
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_validate_missing_email() {
+    let content = r#"---
+name: John Doe
+email: ""  # Empty email should fail validation
+---
+# Content"#;
+
+    let doc = Document::from_string(content, &PathBuf::from("test.md"))
+        .expect("Failed to parse document");
+
+    assert!(doc.validate().is_err());
+}
+
+#[test]
+fn test_document_from_file_nonexistent() {
+    let result = Document::from_file(&PathBuf::from("/nonexistent/path/file.md"));
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_frontmatter_with_extra_dashes() {
+    let content = r"---
+name: Test
+email: test@test.com
+---
+# Content
+---
+More content with dashes";
+
+    let (metadata, content) = frontmatter::parse_frontmatter(content, &PathBuf::from("test.md"))
+        .expect("Should parse successfully");
+
+    assert_eq!(metadata.name, "Test");
+    assert!(content.contains("More content with dashes"));
+}
+
+#[test]
+fn test_empty_frontmatter() {
+    let content = r"---
+---
+# Just content";
+
+    let result = frontmatter::parse_frontmatter(content, &PathBuf::from("test.md"));
+    // Empty frontmatter should fail because required fields are missing
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_frontmatter_only_whitespace() {
+    let content = r"---
+
+
+---
+Content";
+
+    let result = frontmatter::parse_frontmatter(content, &PathBuf::from("test.md"));
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_document_with_all_optional_fields() {
+    let content = r"---
+name: Full User
+email: full@example.com
+phone: +1-555-0123
+location: San Francisco, CA
+linkedin: fulluser
+github: fulluser
+website: https://fulluser.com
+font_theme: sharp
+color_theme: sharp
+layout:
+  columns: 2
+  sidebar: right
+recipient:
+  name: HR Department
+  title: Recruitment Team
+  company: Big Corp
+  address: 123 Main St
+date: 2025-07-20
+subject: Application
+---
+# Content";
+
+    let doc = Document::from_string(content, &PathBuf::from("test.md"))
+        .expect("Failed to parse document");
+
+    assert_eq!(doc.metadata.name, "Full User");
+    assert_eq!(doc.metadata.email, "full@example.com");
+    assert!(doc.metadata.phone.is_some());
+    assert!(doc.metadata.location.is_some());
+    assert!(doc.metadata.linkedin.is_some());
+    assert!(doc.metadata.github.is_some());
+    assert!(doc.metadata.website.is_some());
+    assert!(doc.metadata.recipient.is_some());
+    assert!(doc.metadata.date.is_some());
+    assert!(doc.metadata.subject.is_some());
+    assert_eq!(doc.metadata.layout.columns, 2);
+
+    // Should validate successfully with all fields
+    assert!(doc.validate().is_ok());
+}
+
+#[test]
+fn test_markdown_with_complex_structures() {
+    let content = r#"# Title
+
+## Subtitle
+
+### Subsubtitle
+
+Regular paragraph.
+
+1. First item
+   - Nested bullet
+   - Another nested
+2. Second item
+
+| Table | Headers |
+|-------|---------|
+| Data  | More    |
+
+```rust
+fn code_block() {
+    println!("Hello");
+}
+```
+
+> Block quote
+> Multiple lines
+
+***
+
+[Link](https://example.com) and **bold** and *italic* and ~~strikethrough~~.
+"#;
+
+    let events = markdown::parse_markdown(content);
+
+    // Should parse all these structures
+    assert!(!events.is_empty());
+
+    // Check that we have various event types
+    let has_heading = events.iter().any(|e| {
+        matches!(
+            e,
+            pulldown_cmark::Event::Start(pulldown_cmark::Tag::Heading { .. })
+        )
+    });
+    let has_list = events.iter().any(|e| {
+        matches!(
+            e,
+            pulldown_cmark::Event::Start(pulldown_cmark::Tag::List(_))
+        )
+    });
+    let has_table = events.iter().any(|e| {
+        matches!(
+            e,
+            pulldown_cmark::Event::Start(pulldown_cmark::Tag::Table(_))
+        )
+    });
+    let has_code_block = events.iter().any(|e| {
+        matches!(
+            e,
+            pulldown_cmark::Event::Start(pulldown_cmark::Tag::CodeBlock(_))
+        )
+    });
+
+    assert!(has_heading);
+    assert!(has_list);
+    assert!(has_table);
+    assert!(has_code_block);
 }

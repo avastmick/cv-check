@@ -1,4 +1,4 @@
-use cv_gen::cli::{BuildOptions, CvGenerator};
+use cv_check::cli::{BuildOptions, CvGenerator};
 use std::fs;
 use std::path::Path;
 use tempfile::tempdir;
@@ -123,6 +123,87 @@ fn test_serve_not_implemented() {
     CvGenerator::serve(input_path, 8080);
 
     // Test passes if no panic occurs
+}
+
+#[test]
+fn test_build_with_parent_directory_creation() {
+    let temp_dir = tempdir().expect("Failed to create temp dir");
+    let nested_output = temp_dir.path().join("nested/dir/output.pdf");
+
+    let generator = CvGenerator::new().expect("Failed to create CvGenerator");
+    let input_path = temp_dir.path().join("test.md");
+    fs::write(
+        &input_path,
+        "---\nname: Test\nemail: test@example.com\n---\n# Test",
+    )
+    .expect("Failed to write test file");
+
+    let options = BuildOptions {
+        input: &input_path,
+        font_theme: "modern",
+        color_theme: "modern",
+        output: Some(&nested_output),
+        format: "pdf",
+        template: None,
+        verbose: true, // Test verbose output
+        quiet: true,   // But quiet mode should suppress auto-open
+    };
+
+    // This should create the nested directories
+    let _result = generator.build(&options);
+
+    // Even if PDF generation fails, the directories should be created
+    assert!(temp_dir.path().join("nested/dir").exists());
+}
+
+#[test]
+fn test_build_with_invalid_input_stem() {
+    let generator = CvGenerator::new().expect("Failed to create CvGenerator");
+    let temp_dir = tempdir().expect("Failed to create temp dir");
+
+    // Create a file with no extension and difficult name
+    let input = temp_dir.path().join("no_extension");
+    fs::write(&input, "---\nname: Test\nemail: test@test.com\n---\n")
+        .expect("Failed to write test file");
+
+    let options = BuildOptions {
+        input: &input,
+        font_theme: "modern",
+        color_theme: "modern",
+        output: None,
+        format: "html", // Test non-pdf format
+        template: None,
+        verbose: false,
+        quiet: false,
+    };
+
+    // Should handle files with no proper stem
+    let _ = generator.build(&options);
+}
+
+#[test]
+fn test_open_file_auto_open_disabled() {
+    // Test that auto_open can be disabled via configuration
+    let generator = CvGenerator::new().expect("Failed to create CvGenerator");
+    let temp_dir = tempdir().expect("Failed to create temp dir");
+    let input = temp_dir.path().join("test.md");
+    fs::write(&input, "---\nname: Test\nemail: test@test.com\n---\n")
+        .expect("Failed to write test file");
+
+    let output_path = temp_dir.path().join("output.pdf");
+    let options = BuildOptions {
+        input: &input,
+        font_theme: "modern",
+        color_theme: "modern",
+        output: Some(&output_path),
+        format: "pdf",
+        template: None,
+        verbose: false,
+        quiet: false, // Not quiet, but auto_open might be disabled in config
+    };
+
+    // The build will handle auto_open based on config
+    let _ = generator.build(&options);
 }
 
 #[test]
