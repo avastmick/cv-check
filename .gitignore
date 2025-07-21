@@ -17,8 +17,9 @@ fonts/
 
 # Testing
 resume.md
-no_extension.html
+cv_tailored.md
 cv-tailored.pdf
+no_extension.html
 
 # Codegen
 CLAUDE*

@@ -37,3 +37,64 @@ Please provide:
 Remember to maintain honesty while presenting the candidate's experience in the most relevant way for this role."
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_system_prompt_content() {
+        // Test that system prompt contains expected content
+        assert!(SYSTEM_PROMPT.contains("expert HR professional"));
+        assert!(SYSTEM_PROMPT.contains("Applicant Tracking Systems"));
+        assert!(SYSTEM_PROMPT.contains("ATS"));
+        assert!(SYSTEM_PROMPT.contains("hiring managers"));
+        assert!(SYSTEM_PROMPT.contains("CV structure"));
+        assert!(SYSTEM_PROMPT.len() > 100); // Ensure it's substantial
+    }
+
+    #[test]
+    fn test_create_user_prompt() {
+        let cv_content = "John Doe\nSoftware Engineer\n10 years experience";
+        let job_description = "Senior Developer position at Tech Corp";
+
+        let prompt = create_user_prompt(cv_content, job_description);
+
+        // Test that the prompt contains both inputs
+        assert!(prompt.contains(cv_content));
+        assert!(prompt.contains(job_description));
+
+        // Test that it contains expected instructions
+        assert!(prompt.contains("CURRENT CV:"));
+        assert!(prompt.contains("JOB DESCRIPTION:"));
+        assert!(prompt.contains("professional summary"));
+        assert!(prompt.contains("reordered"));
+        assert!(prompt.contains("skills"));
+        assert!(prompt.contains("Keywords"));
+        assert!(prompt.contains("suggestions"));
+    }
+
+    #[test]
+    fn test_create_user_prompt_with_empty_inputs() {
+        let prompt = create_user_prompt("", "");
+
+        // Should still create a valid prompt structure
+        assert!(prompt.contains("CURRENT CV:"));
+        assert!(prompt.contains("JOB DESCRIPTION:"));
+        assert!(!prompt.is_empty());
+    }
+
+    #[test]
+    fn test_create_user_prompt_with_special_characters() {
+        let cv_content = "Skills: C++, C#, .NET\nExperience: 5+ years";
+        let job_description = "Looking for C++/C# developer with .NET experience";
+
+        let prompt = create_user_prompt(cv_content, job_description);
+
+        // Ensure special characters are preserved
+        assert!(prompt.contains("C++"));
+        assert!(prompt.contains("C#"));
+        assert!(prompt.contains(".NET"));
+        assert!(prompt.contains("5+"));
+    }
+}
