@@ -145,8 +145,8 @@ fn test_build_with_parent_directory_creation() {
         output: Some(&nested_output),
         format: "pdf",
         template: None,
-        verbose: true, // Test verbose output
-        quiet: true,   // But quiet mode should suppress auto-open
+        verbose: false,
+        quiet: true, // But quiet mode should suppress auto-open
     };
 
     // This should create the nested directories

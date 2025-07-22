@@ -219,6 +219,57 @@ cargo clippy --all-targets --all-features
 cargo tarpaulin --out Html
 ```
 
+## CI/CD Usage
+
+When running `cv_check` in CI environments (GitHub Actions, GitLab CI, Jenkins, etc.), the tool automatically detects the CI environment and disables auto-opening of generated files.
+
+### Environment Variables
+
+- **`CI`**: Standard CI environment variable. When set, auto-open is disabled.
+- **`CV_CHECK_NO_OPEN`**: Explicitly disable auto-opening of generated files. Useful for:
+  - Running tests locally without opening files
+  - Batch processing multiple CVs
+  - Server environments
+
+### Example CI Configuration
+
+```yaml
+# GitHub Actions example
+- name: Generate CV
+  run: |
+    cv build examples/cv.md --output artifacts/cv.pdf
+  env:
+    CV_CHECK_NO_OPEN: "1"  # Optional, CI=true is auto-detected
+
+# GitLab CI example
+generate_cv:
+  script:
+    - cv build cv.md --format pdf --quiet
+  artifacts:
+    paths:
+      - "*.pdf"
+```
+
+### Running Tests in CI
+
+```bash
+# Tests automatically set CV_CHECK_NO_OPEN to prevent file opening
+cargo test
+
+# For integration tests that generate files
+CV_CHECK_NO_OPEN=1 cargo test --test integration
+```
+
+### Batch Processing
+
+```bash
+# Process multiple CVs without opening each one
+export CV_CHECK_NO_OPEN=1
+for cv in *.md; do
+  cv build "$cv" --quiet
+done
+```
+
 ## Project Structure
 
 ```

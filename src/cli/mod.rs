@@ -1,3 +1,5 @@
+pub mod display;
+
 use crate::ai::{extract_text_from_pdf, AIClient};
 use crate::config::GlobalConfig;
 use crate::parser::Document;
@@ -5,6 +7,7 @@ use crate::render::Renderer;
 use crate::themes::Theme;
 use anyhow::Result;
 use colored::Colorize;
+use indicatif::{ProgressBar, ProgressStyle};
 use log::{info, warn};
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
@@ -84,12 +87,23 @@ impl CvGenerator {
         let renderer = Renderer::new(options.format, options.template)?;
         renderer.render(&doc, &theme, &output_path)?;
 
-        if options.verbose {
-            info!("Output: {}", output_path.display());
+        if !options.quiet {
+            println!("{} Output: {}", "→".blue(), output_path.display());
         }
 
+        if options.verbose && !options.quiet {
+            println!("  Font theme: {}", options.font_theme);
+            println!("  Color theme: {}", options.color_theme);
+            println!("  Format: {}", options.format);
+            println!("  Auto-open: {}", self.config.auto_open.unwrap_or(true));
+        }
+
+        info!("Output path: {}", output_path.display());
+
         // Auto-open if configured
-        if self.config.auto_open.unwrap_or(true) && !options.quiet {
+        // Check for CI environment variable to disable auto-open in tests
+        let ci_mode = std::env::var("CI").is_ok() || std::env::var("CV_CHECK_NO_OPEN").is_ok();
+        if self.config.auto_open.unwrap_or(true) && !options.quiet && !ci_mode {
             Self::open_file(&output_path)?;
         }
 
@@ -123,9 +137,9 @@ impl CvGenerator {
         let (font_themes, color_themes) = Theme::available_themes();
 
         if fonts {
-            info!("{}", "Font Themes:".bold());
+            println!("{}", "Font Themes:".bold());
             for theme in font_themes {
-                info!(
+                println!(
                     "  • {} - {}",
                     theme.cyan(),
                     match theme {
@@ -137,14 +151,14 @@ impl CvGenerator {
                 );
             }
             if colors {
-                info!("");
+                println!();
             }
         }
 
         if colors {
-            info!("{}", "Color Themes:".bold());
+            println!("{}", "Color Themes:".bold());
             for theme in color_themes {
-                info!(
+                println!(
                     "  • {} - {}",
                     theme.cyan(),
                     match theme {
@@ -215,10 +229,7 @@ impl CvGenerator {
     }
 
     /// Generates the content sections for a tailored CV.
-    fn generate_tailored_content(
-        tailored_cv: &crate::ai::schemas::TailoredCV,
-        verbose: bool,
-    ) -> Result<String> {
+    fn generate_tailored_content(tailored_cv: &crate::ai::schemas::TailoredCV) -> Result<String> {
         let mut content = String::new();
 
         // Add professional summary
@@ -234,13 +245,12 @@ impl CvGenerator {
             for highlight in &exp.highlights {
                 writeln!(&mut content, "- {highlight}")?;
             }
-            if verbose {
-                writeln!(
-                    &mut content,
-                    "\n<!-- Relevance Score: {:.2} -->",
-                    exp.relevance_score
-                )?;
-            }
+            // Always include relevance score as a comment
+            writeln!(
+                &mut content,
+                "\n<!-- Relevance Score: {:.2} -->",
+                exp.relevance_score
+            )?;
             content.push('\n');
         }
 
@@ -254,8 +264,8 @@ impl CvGenerator {
         content.push_str(&tailored_cv.keywords.join(", "));
         content.push_str(" -->\n\n");
 
-        // Add suggestions as comments if verbose
-        if verbose && !tailored_cv.suggestions.is_empty() {
+        // Add suggestions as comments
+        if !tailored_cv.suggestions.is_empty() {
             content.push_str("<!-- AI Suggestions:\n");
             for suggestion in &tailored_cv.suggestions {
                 writeln!(&mut content, "- {suggestion}")?;
@@ -271,10 +281,25 @@ impl CvGenerator {
     /// # Errors
     ///
     /// Returns an error if CV parsing, PDF extraction, AI processing, or rendering fails.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the progress bar style template is invalid.
     pub async fn tailor(&self, options: &TailorOptions<'_>) -> Result<()> {
-        if options.verbose {
-            info!("{} Reading CV and job description...", "→".blue());
+        if !options.quiet {
+            println!("{} Reading CV and job description...", "→".blue());
+            println!("  CV: {}", options.cv_path.display().to_string().dimmed());
+            println!(
+                "  JD: {}",
+                options.job_description_path.display().to_string().dimmed()
+            );
         }
+
+        info!("CV path: {}", options.cv_path.display());
+        info!(
+            "Job description path: {}",
+            options.job_description_path.display()
+        );
 
         // Read the CV markdown file
         let cv_content = std::fs::read_to_string(options.cv_path)?;
@@ -285,24 +310,56 @@ impl CvGenerator {
         // Extract text from the job description PDF
         let job_description = extract_text_from_pdf(options.job_description_path)?;
 
-        if options.verbose {
-            info!("{} Connecting to AI service...", "→".blue());
+        if !options.quiet {
+            println!("{} Connecting to AI service...", "→".blue());
         }
 
         // Create AI client from environment
         let mut ai_client = AIClient::from_env()
             .map_err(|e| anyhow::anyhow!("Failed to create AI client: {e}. Make sure AI_ENDPOINT, AI_API_KEY, and AI_MODEL are set."))?;
 
-        if options.verbose {
-            info!("{} Tailoring CV to job description...", "→".blue());
+        if !options.quiet {
+            let endpoint = std::env::var("AI_ENDPOINT").unwrap_or_else(|_| "not set".to_string());
+            let model = &ai_client.model;
+            println!("  Provider: {}", endpoint.dimmed());
+            println!("  Model: {}", model.dimmed());
         }
+
+        // Create a progress spinner for AI processing
+        let spinner = if options.quiet {
+            None
+        } else {
+            println!(); // Add blank line for spacing
+            let pb = ProgressBar::new_spinner();
+            pb.set_style(
+                ProgressStyle::default_spinner()
+                    .template("{spinner:.blue} {msg}")
+                    .expect("Failed to set progress style")
+                    .tick_chars("⣷⣯⣟⡿⢿⣻⣽⣾"),
+            );
+            pb.set_message(
+                "Analyzing job requirements and tailoring CV (this may take a moment)...",
+            );
+            pb.enable_steady_tick(std::time::Duration::from_millis(80));
+            Some(pb)
+        };
 
         // Get tailored CV content
         let tailored_cv = ai_client.tailor_cv(&cv_content, &job_description).await?;
 
+        // Stop the spinner
+        if let Some(pb) = spinner {
+            pb.finish_and_clear();
+        }
+
+        // Display suggestions to the user
+        if !options.quiet && !tailored_cv.suggestions.is_empty() {
+            display::show_suggestions(&tailored_cv.suggestions);
+        }
+
         // Generate the tailored markdown
         let frontmatter = Self::generate_frontmatter(&original_doc, options)?;
-        let content = Self::generate_tailored_content(&tailored_cv, options.verbose)?;
+        let content = Self::generate_tailored_content(&tailored_cv)?;
         let tailored_markdown = frontmatter + &content;
 
         // Determine output path
@@ -321,7 +378,7 @@ impl CvGenerator {
         std::fs::write(&output_path, &tailored_markdown)?;
 
         if !options.quiet {
-            info!(
+            println!(
                 "{} Tailored CV saved to: {}",
                 "✓".green(),
                 output_path.display()
@@ -330,8 +387,8 @@ impl CvGenerator {
 
         // If format is not markdown, generate the final document
         if options.format != "md" {
-            if options.verbose {
-                info!("{} Generating {} output...", "→".blue(), options.format);
+            if !options.quiet {
+                println!("{} Generating {} output...", "→".blue(), options.format);
             }
 
             // Create the output path for the final format

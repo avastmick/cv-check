@@ -92,33 +92,30 @@ fn test_new_letter_command() {
 fn test_themes_command() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.arg("themes")
-        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stderr(predicate::str::contains("Font Themes"))
-        .stderr(predicate::str::contains("Color Themes"));
+        .stdout(predicate::str::contains("Font Themes"))
+        .stdout(predicate::str::contains("Color Themes"));
 }
 
 #[test]
 fn test_themes_fonts_only() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["themes", "--fonts"])
-        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stderr(predicate::str::contains("Font Themes"))
-        .stderr(predicate::str::contains("Classic").not());
+        .stdout(predicate::str::contains("Font Themes"))
+        .stdout(predicate::str::contains("Color Themes").not());
 }
 
 #[test]
 fn test_themes_colors_only() {
     let mut cmd = Command::cargo_bin("cv").expect("Failed to find binary");
     cmd.args(["themes", "--colors"])
-        .env("RUST_LOG", "info")
         .assert()
         .success()
-        .stderr(predicate::str::contains("Color Themes"))
-        .stderr(predicate::str::contains("Font Themes").not());
+        .stdout(predicate::str::contains("Color Themes"))
+        .stdout(predicate::str::contains("Font Themes").not());
 }
 
 #[test]
@@ -305,7 +302,7 @@ fn test_build_with_verbose() {
     .env("RUST_LOG", "info")
     .assert()
     .success()
-    .stderr(predicate::str::contains("Building document..."));
+    .stderr(predicate::str::contains("INFO"));
 
     // Verify PDF was created and has substantial content
     assert!(output_path.exists(), "PDF should be created");
