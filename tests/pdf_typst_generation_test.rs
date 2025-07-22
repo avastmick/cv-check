@@ -179,7 +179,7 @@ Details about education.";
     let mut block_closed_before_education = false;
 
     for (i, line) in lines.iter().enumerate() {
-        if line.contains("text(size: 16pt, weight: \"bold\")[") && i > 10 {
+        if line.contains("text(size: 16pt, weight: \"bold\", fill:") && i > 10 {
             // This is likely the Education H1
             found_education_h1 = true;
 

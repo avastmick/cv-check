@@ -355,7 +355,11 @@ impl PdfRenderer {
                         // Top-level sections (Experience, Education, Skills)
                         let _ = writeln!(output, "\n#v(1.5em)");
                         let _ = writeln!(output, "#block(above: 0em, below: 0.8em)[");
-                        let _ = write!(output, "  #text(size: 16pt, weight: \"bold\")[");
+                        let _ = write!(
+                            output,
+                            "  #text(size: 16pt, weight: \"bold\", fill: {})[",
+                            theme.color.get_h1_color()
+                        );
                     }
                     HeadingLevel::H2 => {
                         // Company/Organization names - make prominent
@@ -364,14 +368,22 @@ impl PdfRenderer {
                         let _ = write!(
                             output,
                             "  #text(size: 14pt, weight: \"bold\", fill: {})[",
-                            theme.color.to_typst_rgb("primary")
+                            theme.color.get_h2_color()
                         );
                     }
                     HeadingLevel::H3 => {
                         // Job titles/roles - less prominent than company
-                        let _ = writeln!(output, "\n#v(0.8em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.6em)[");
-                        let _ = write!(output, "  #text(size: 12pt, weight: \"semibold\")[");
+                        let _ = writeln!(output, "\n#v({}em)", theme.color.get_h3_spacing_above());
+                        let _ = writeln!(
+                            output,
+                            "#block(above: 0em, below: {}em)[",
+                            theme.color.get_h3_spacing_below()
+                        );
+                        let _ = write!(
+                            output,
+                            "  #text(size: 12pt, weight: \"semibold\", fill: {})[",
+                            theme.color.get_h3_color()
+                        );
                     }
                     _ => {
                         // H4, H5, H6 - rarely used
@@ -429,7 +441,8 @@ impl PdfRenderer {
                     if matches!(context.heading_level, HeadingLevel::H1) {
                         let _ = writeln!(
                             output,
-                            "\n  #line(length: 100%, stroke: 2pt + {})",
+                            "\n  #line(length: 100%, stroke: {}pt + {})",
+                            theme.color.get_separator_thickness(),
                             theme.color.to_typst_rgb("accent")
                         );
                     }
@@ -693,9 +706,9 @@ This is a paragraph.
 
         PdfRenderer::render_markdown_as_typst(content, &mut output, &theme);
 
-        // Check heading formatting
-        assert!(output.contains("#text(size: 16pt, weight: \"bold\")"));
-        assert!(output.contains("#line(length: 100%, stroke: 2pt"));
+        // Check heading formatting (now includes fill color)
+        assert!(output.contains("#text(size: 16pt, weight: \"bold\", fill:"));
+        assert!(output.contains("#line(length: 100%, stroke:"));
 
         // Check list formatting
         assert!(output.contains("• Item 1"));

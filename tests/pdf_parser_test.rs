@@ -5,8 +5,8 @@ use std::path::Path;
 
 #[test]
 fn test_extract_text_from_valid_pdf() {
-    // Use the existing jd_example.pdf
-    let pdf_path = Path::new("examples/jd_example.pdf");
+    // Use the existing jd-example.pdf
+    let pdf_path = Path::new("examples/jd-example.pdf");
 
     // Extract text from PDF
     let result = extract_text_from_pdf(pdf_path);
@@ -47,7 +47,7 @@ fn test_extract_text_from_invalid_pdf() {
 #[test]
 fn test_extract_text_preserves_structure() {
     // Use the same PDF to test structure preservation
-    let pdf_path = Path::new("examples/jd_example.pdf");
+    let pdf_path = Path::new("examples/jd-example.pdf");
 
     let result = extract_text_from_pdf(pdf_path);
     assert!(result.is_ok());

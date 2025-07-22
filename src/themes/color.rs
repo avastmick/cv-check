@@ -13,6 +13,14 @@ pub struct ColorTheme {
     pub background: String,
     pub surface: String,
     pub border: String,
+    // Heading-specific colors
+    pub h1_color: Option<String>,
+    pub h2_color: Option<String>,
+    pub h3_color: Option<String>,
+    // Styling properties
+    pub separator_thickness: Option<f32>,
+    pub h3_spacing_above: Option<f32>,
+    pub h3_spacing_below: Option<f32>,
 }
 
 impl ColorTheme {
@@ -44,19 +52,31 @@ impl ColorTheme {
             background: "#FAFAFA".to_string(), // Warm White
             surface: "#F0F0F0".to_string(),    // Light Gray
             border: "#D0D0D0".to_string(),     // Medium Gray
+            h1_color: None,                    // Use default
+            h2_color: None,                    // Use primary
+            h3_color: None,                    // Use text
+            separator_thickness: None,         // Use default 2pt
+            h3_spacing_above: None,            // Use default
+            h3_spacing_below: None,            // Use default
         }
     }
 
     fn modern() -> Self {
         Self {
-            primary: "#0066CC".to_string(),    // Electric Blue
-            secondary: "#00A8A8".to_string(),  // Teal
-            accent: "#FF6B35".to_string(),     // Orange
-            text: "#333333".to_string(),       // Dark Gray
-            muted: "#666666".to_string(),      // Medium Gray
-            background: "#FFFFFF".to_string(), // Pure White
-            surface: "#F3F4F6".to_string(),    // Cool Gray
-            border: "#E5E7EB".to_string(),     // Light Gray
+            primary: "#0066CC".to_string(),        // Electric Blue
+            secondary: "#00A8A8".to_string(),      // Teal
+            accent: "#FF6B35".to_string(),         // Orange
+            text: "#333333".to_string(),           // Dark Gray
+            muted: "#666666".to_string(),          // Medium Gray
+            background: "#FFFFFF".to_string(),     // Pure White
+            surface: "#F3F4F6".to_string(),        // Cool Gray
+            border: "#E5E7EB".to_string(),         // Light Gray
+            h1_color: None,                        // Use default (text color)
+            h2_color: Some("#607D8B".to_string()), // Blue-grey
+            h3_color: Some("#424242".to_string()), // Dark grey
+            separator_thickness: Some(1.0),        // Thinner line
+            h3_spacing_above: Some(1.0),           // Increased spacing
+            h3_spacing_below: Some(0.8),           // Increased spacing
         }
     }
 
@@ -70,6 +90,12 @@ impl ColorTheme {
             background: "#F8FAFC".to_string(), // Cool White
             surface: "#F1F5F9".to_string(),    // Slate
             border: "#E2E8F0".to_string(),     // Light Slate
+            h1_color: None,                    // Use default
+            h2_color: None,                    // Use primary
+            h3_color: None,                    // Use text
+            separator_thickness: None,         // Use default
+            h3_spacing_above: None,            // Use default
+            h3_spacing_below: None,            // Use default
         }
     }
 
@@ -89,6 +115,48 @@ impl ColorTheme {
         };
 
         format!("rgb(\"{hex}\")")
+    }
+
+    /// Get H1 color with fallback to text color
+    #[must_use]
+    pub fn get_h1_color(&self) -> String {
+        self.h1_color
+            .as_ref()
+            .map_or_else(|| self.to_typst_rgb("text"), |c| format!("rgb(\"{c}\")"))
+    }
+
+    /// Get H2 color with fallback to primary color
+    #[must_use]
+    pub fn get_h2_color(&self) -> String {
+        self.h2_color
+            .as_ref()
+            .map_or_else(|| self.to_typst_rgb("primary"), |c| format!("rgb(\"{c}\")"))
+    }
+
+    /// Get H3 color with fallback to text color
+    #[must_use]
+    pub fn get_h3_color(&self) -> String {
+        self.h3_color
+            .as_ref()
+            .map_or_else(|| self.to_typst_rgb("text"), |c| format!("rgb(\"{c}\")"))
+    }
+
+    /// Get separator thickness with fallback to 2pt
+    #[must_use]
+    pub fn get_separator_thickness(&self) -> f32 {
+        self.separator_thickness.unwrap_or(2.0)
+    }
+
+    /// Get H3 spacing above with fallback to 0.8em
+    #[must_use]
+    pub fn get_h3_spacing_above(&self) -> f32 {
+        self.h3_spacing_above.unwrap_or(0.8)
+    }
+
+    /// Get H3 spacing below with fallback to 0.6em
+    #[must_use]
+    pub fn get_h3_spacing_below(&self) -> f32 {
+        self.h3_spacing_below.unwrap_or(0.6)
     }
 }
 
