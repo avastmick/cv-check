@@ -19,6 +19,10 @@ pub struct ColorTheme {
     pub h3_color: Option<String>,
     // Styling properties
     pub separator_thickness: Option<f32>,
+    pub h1_spacing_above: Option<f32>,
+    pub h1_spacing_below: Option<f32>,
+    pub h2_spacing_above: Option<f32>,
+    pub h2_spacing_below: Option<f32>,
     pub h3_spacing_above: Option<f32>,
     pub h3_spacing_below: Option<f32>,
 }
@@ -56,6 +60,10 @@ impl ColorTheme {
             h2_color: None,                    // Use primary
             h3_color: None,                    // Use text
             separator_thickness: None,         // Use default 2pt
+            h1_spacing_above: None,            // Use default
+            h1_spacing_below: None,            // Use default
+            h2_spacing_above: None,            // Use default
+            h2_spacing_below: None,            // Use default
             h3_spacing_above: None,            // Use default
             h3_spacing_below: None,            // Use default
         }
@@ -75,6 +83,10 @@ impl ColorTheme {
             h2_color: Some("#607D8B".to_string()), // Blue-grey
             h3_color: Some("#424242".to_string()), // Dark grey
             separator_thickness: Some(1.0),        // Thinner line
+            h1_spacing_above: Some(2.5),           // More space above H1
+            h1_spacing_below: Some(0.8),           // Standard below H1
+            h2_spacing_above: Some(1.2),           // Default H2 spacing
+            h2_spacing_below: Some(0.8),           // Default H2 spacing
             h3_spacing_above: Some(1.0),           // Increased spacing
             h3_spacing_below: Some(0.8),           // Increased spacing
         }
@@ -94,6 +106,10 @@ impl ColorTheme {
             h2_color: None,                    // Use primary
             h3_color: None,                    // Use text
             separator_thickness: None,         // Use default
+            h1_spacing_above: None,            // Use default
+            h1_spacing_below: None,            // Use default
+            h2_spacing_above: None,            // Use default
+            h2_spacing_below: None,            // Use default
             h3_spacing_above: None,            // Use default
             h3_spacing_below: None,            // Use default
         }
@@ -145,6 +161,30 @@ impl ColorTheme {
     #[must_use]
     pub fn get_separator_thickness(&self) -> f32 {
         self.separator_thickness.unwrap_or(2.0)
+    }
+
+    /// Get H1 spacing above with fallback to 1.5em
+    #[must_use]
+    pub fn get_h1_spacing_above(&self) -> f32 {
+        self.h1_spacing_above.unwrap_or(1.5)
+    }
+
+    /// Get H1 spacing below with fallback to 0.8em
+    #[must_use]
+    pub fn get_h1_spacing_below(&self) -> f32 {
+        self.h1_spacing_below.unwrap_or(0.8)
+    }
+
+    /// Get H2 spacing above with fallback to 1.2em
+    #[must_use]
+    pub fn get_h2_spacing_above(&self) -> f32 {
+        self.h2_spacing_above.unwrap_or(1.2)
+    }
+
+    /// Get H2 spacing below with fallback to 0.8em
+    #[must_use]
+    pub fn get_h2_spacing_below(&self) -> f32 {
+        self.h2_spacing_below.unwrap_or(0.8)
     }
 
     /// Get H3 spacing above with fallback to 0.8em

@@ -180,8 +180,18 @@ Details about education.";
 
     for (i, line) in lines.iter().enumerate() {
         if line.contains("text(size: 16pt, weight: \"bold\", fill:") && i > 10 {
-            // This is likely the Education H1
-            found_education_h1 = true;
+            // Check if this is the Education H1 by looking at surrounding lines
+            // Look for "Education" in the next few lines
+            for line_check in lines.iter().skip(i).take(3) {
+                if line_check.contains("Education") {
+                    found_education_h1 = true;
+                    break;
+                }
+            }
+
+            if !found_education_h1 {
+                continue;
+            }
 
             // Check that there's a block end before this
             for j in (0..i).rev() {

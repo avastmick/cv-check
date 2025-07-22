@@ -48,6 +48,21 @@ Experienced software engineer with expertise in building scalable systems.
 }
 
 #[test]
+fn test_modern_theme_h1_spacing() {
+    let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
+    let doc = create_test_document_modern_theme();
+    let theme = Theme::new("modern", "modern").expect("Failed to create theme");
+
+    let typst_source = renderer.generate_typst_source_for_testing(&doc, &theme);
+
+    // H1 should have increased spacing above (2.5em for modern theme)
+    assert!(
+        typst_source.contains("#v(2.5em)") && typst_source.contains("text(size: 16pt"),
+        "H1 headings should have 2.5em vertical spacing above in modern theme"
+    );
+}
+
+#[test]
 fn test_modern_theme_h2_color() {
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
     let doc = create_test_document_modern_theme();

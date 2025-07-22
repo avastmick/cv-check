@@ -202,7 +202,7 @@ impl PdfRenderer {
             match event {
                 Event::Start(tag) => Self::handle_start_tag(tag, output, &mut render_ctx, theme),
                 Event::End(tag) => Self::handle_end_tag(tag, output, theme, &mut render_ctx),
-                Event::Text(text) => Self::handle_text(&text, output),
+                Event::Text(text) => Self::handle_text(&text, output, &render_ctx, theme),
                 Event::Code(code) => {
                     let _ = write!(output, "`{code}`");
                 }
@@ -254,9 +254,11 @@ impl PdfRenderer {
             }
 
             // Check if this is the start of an H2 section
-            if line.contains("#v(1.2em)")
+            // Look for pattern: #v(XXem) followed by #block and then H2 text
+            if line.contains("#v(")
+                && line.contains("em)")
                 && i + 1 < lines.len()
-                && lines[i + 1].contains("#block(above: 0em, below: 0.8em)[")
+                && lines[i + 1].contains("#block(above: 0em, below:")
             {
                 // Look ahead to confirm this is an H2
                 let mut is_h2 = false;
@@ -281,9 +283,10 @@ impl PdfRenderer {
 
             // Check if this is an H1 heading that would end the current H2 section
             if in_h2_section
-                && line.contains("#v(1.5em)")
+                && line.contains("#v(")
+                && line.contains("em)")
                 && i + 1 < lines.len()
-                && lines[i + 1].contains("#block(above: 0em, below: 0.8em)[")
+                && lines[i + 1].contains("#block(above: 0em, below:")
             {
                 // Look ahead to confirm this is an H1
                 for check_line in lines.iter().skip(i + 2).take(3) {
@@ -353,8 +356,12 @@ impl PdfRenderer {
                 match level {
                     HeadingLevel::H1 => {
                         // Top-level sections (Experience, Education, Skills)
-                        let _ = writeln!(output, "\n#v(1.5em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.8em)[");
+                        let _ = writeln!(output, "\n#v({}em)", theme.color.get_h1_spacing_above());
+                        let _ = writeln!(
+                            output,
+                            "#block(above: 0em, below: {}em)[",
+                            theme.color.get_h1_spacing_below()
+                        );
                         let _ = write!(
                             output,
                             "  #text(size: 16pt, weight: \"bold\", fill: {})[",
@@ -363,13 +370,15 @@ impl PdfRenderer {
                     }
                     HeadingLevel::H2 => {
                         // Company/Organization names - make prominent
-                        let _ = writeln!(output, "\n#v(1.2em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.8em)[");
-                        let _ = write!(
+                        let _ = writeln!(output, "\n#v({}em)", theme.color.get_h2_spacing_above());
+                        let _ = writeln!(
                             output,
-                            "  #text(size: 14pt, weight: \"bold\", fill: {})[",
-                            theme.color.get_h2_color()
+                            "#block(above: 0em, below: {}em)[",
+                            theme.color.get_h2_spacing_below()
                         );
+                        // Don't start the text formatting here - we'll handle it when processing the text
+                        // to allow for mixed bold/non-bold content
+                        context.in_heading = true;
                     }
                     HeadingLevel::H3 => {
                         // Job titles/roles - less prominent than company
@@ -437,7 +446,10 @@ impl PdfRenderer {
         match tag {
             TagEnd::Heading(_) => {
                 if context.in_heading {
-                    let _ = write!(output, "]");
+                    // For H2, we handle the text formatting in handle_text, so no closing bracket needed here
+                    if !matches!(context.heading_level, HeadingLevel::H2) {
+                        let _ = write!(output, "]");
+                    }
                     if matches!(context.heading_level, HeadingLevel::H1) {
                         let _ = writeln!(
                             output,
@@ -482,7 +494,12 @@ impl PdfRenderer {
         }
     }
 
-    fn handle_text(text: &pulldown_cmark::CowStr, output: &mut String) {
+    fn handle_text(
+        text: &pulldown_cmark::CowStr,
+        output: &mut String,
+        context: &RenderContext,
+        theme: &Theme,
+    ) {
         // Check for pagebreak marker
         if text.trim() == "TYPST_PAGEBREAK_MARKER" {
             let _ = writeln!(output, "\n#pagebreak()\n");
@@ -493,7 +510,37 @@ impl PdfRenderer {
             .replace('@', "\\@")
             .replace('#', "\\#")
             .replace('$', "\\$");
-        let _ = write!(output, "{escaped}");
+
+        // Special handling for H2 headings with parentheses (Company names with locations)
+        if context.in_heading && matches!(context.heading_level, pulldown_cmark::HeadingLevel::H2) {
+            // Check if this text contains parentheses
+            if let Some(paren_start) = escaped.find('(') {
+                // Split into company name and location parts
+                let company = &escaped[..paren_start].trim();
+                let location = &escaped[paren_start..];
+
+                // Company name in bold, location in regular weight
+                let _ = write!(
+                    output,
+                    "  #text(size: 14pt, weight: \"bold\", fill: {})[{}] #text(size: 14pt, weight: \"regular\", fill: {})[{}]",
+                    theme.color.get_h2_color(),
+                    company,
+                    theme.color.get_h2_color(),
+                    location
+                );
+            } else {
+                // No parentheses, render normally with bold
+                let _ = write!(
+                    output,
+                    "  #text(size: 14pt, weight: \"bold\", fill: {})[{}]",
+                    theme.color.get_h2_color(),
+                    escaped
+                );
+            }
+        } else {
+            // Normal text handling
+            let _ = write!(output, "{escaped}");
+        }
     }
 }
 
