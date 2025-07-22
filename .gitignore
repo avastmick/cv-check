@@ -5,8 +5,7 @@
 
 # Outputs
 output/
-**/*.pdf
-**/*.docx
+cv/
 
 # Fonts
 fonts/
@@ -15,10 +14,15 @@ fonts/
 .env**
 !.envrc.example
 
-# Testing
-resume.md
-cv_tailored.md
-cv-tailored.pdf
+# Ignore markdown and PDF files except in examples/
+*.md
+*.pdf
+*.docx
+!examples/*.md
+!examples/*.pdf
+!examples/*.docx
+
+# Specific test files (already covered by *.md and *.pdf above)
 no_extension.html
 
 # Codegen
