@@ -30,10 +30,11 @@ All format-specific renderers implement this trait, allowing for easy extension.
 - Supports custom template overrides via `--template` flag
 - Handles font embedding and styling
 
-#### `docx.rs` - Word Document Generation
-- Creates Microsoft Word compatible documents
-- Applies theme styles to paragraphs and sections
-- Maintains document structure and formatting
+#### `docx.rs` - Word Document Generation (Placeholder)
+- **TODO**: Not yet implemented
+- Currently creates placeholder file
+- Will create Microsoft Word compatible documents
+- Will apply theme styles to paragraphs and sections
 
 #### `html.rs` - HTML Generation
 - Generates self-contained HTML with embedded CSS
@@ -88,7 +89,7 @@ renderer.render(&doc, &theme, Path::new("output.pdf"))?;
 ## Dependencies
 
 - `typst`: PDF generation engine
-- `docx-rs`: Word document creation (when implemented)
+- `docx-rs`: Word document creation (TODO - not yet implemented)
 - `pulldown-cmark`: Markdown to HTML conversion
 
 ## Adding a New Format

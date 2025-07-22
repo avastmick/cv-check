@@ -66,9 +66,29 @@ generator.check(Path::new("cv.md"))?;
 
 Uses `anyhow::Result` for all public methods, allowing rich error context. Errors are propagated from underlying modules with additional context added at this layer.
 
+## Available Commands
+
+The CLI module supports these commands:
+
+1. **`build`** - Generate CV/letter from markdown
+2. **`new`** - Create new CV or letter from template
+3. **`themes`** - List available font and color themes
+4. **`check`** - Validate markdown structure
+5. **`serve`** - Start preview server (planned)
+6. **`tailor`** - AI-powered CV tailoring to job descriptions
+
+### Tailor Command
+
+The `tailor` command uses AI to optimize a CV for specific job descriptions:
+- Extracts text from PDF job descriptions
+- Sends CV + job description to AI model
+- Generates tailored CV with optimized keywords and content
+- Outputs in multiple formats (PDF, DOCX, HTML, Markdown)
+
 ## Future Enhancements
 
 - [ ] Watch mode for auto-rebuilding
 - [ ] Batch processing of multiple files
 - [ ] Theme preview/demo generation
 - [ ] Interactive theme selection
+- [ ] Complete serve command implementation

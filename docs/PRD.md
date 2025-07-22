@@ -2,7 +2,7 @@
 
 ## Overview
 
-A modern, Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. In Phase 2, the tool leverages generative AI to automatically tailor CVs to specific job descriptions, optimizing content, keywords, and layout for maximum job application success.
+A modern, Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. The tool leverages generative AI to automatically tailor CVs to specific job descriptions, optimizing content, keywords, and layout for maximum job application success.
 
 ### Goal
 
@@ -10,7 +10,7 @@ The application will iterate on additional features until the following features
 - [x] Markdown CV to professionally typeset PDF output
 - [ ] Additional MS Word (`.docx`) output
 - [x] Simple, multiple, impactfull, themeing
-- [🚧] Align output CV keywords and experience to input **Job Description** with Generative AI assistance
+- [x] Align output CV keywords and experience to input **Job Description** with Generative AI assistance
 - [ ] Fully aligned generated Cover Letter to input **Job Description** with Generative AI assistance
 - [ ] Static site generation for CV including themeing and deployment
 
@@ -20,7 +20,7 @@ The application will iterate on additional features until the following features
 - **Markdown files** with YAML frontmatter for metadata
 - **Validation** via `check` command ensures proper structure
 - **Live reload** with file watching for rapid iteration
-- **PDF Job Descriptions** (Phase 2) for AI-powered CV tailoring
+- **PDF Job Descriptions** for AI-powered CV tailoring
 
 ### Output Formats
 - **PDF**: Professional typesetting via Typst
@@ -43,7 +43,7 @@ The application will iterate on additional features until the following features
 - **Two column**: Compact layout for longer CVs
 - **Summary mode**: One-page condensed version
 
-### AI-Powered Features (Phase 2)
+### AI-Powered Features
 - **CV Tailoring**: Automatically optimize CV content for specific job descriptions
 - **Keyword Optimization**: Extract and incorporate relevant keywords from job descriptions
 - **Experience Alignment**: Reorder and emphasize experiences matching job requirements
@@ -61,7 +61,7 @@ cv new cv                   # Create CV template
 cv new letter              # Create letter template
 cv themes                  # List available themes
 cv check <input.md>        # Validate markdown structure
-cv tailor <cv.md> <job.pdf> # AI-powered CV tailoring (Phase 2)
+cv tailor <cv.md> <job.pdf> # AI-powered CV tailoring
 cv serve <input.md>        # Preview server (planned)
 ```
 
@@ -74,7 +74,7 @@ cv_check/
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
 │   ├── templates/        # Markdown templates
-│   ├── ai/               # AI integration (Phase 2)
+│   ├── ai/               # AI integration
 │   │   ├── client.rs     # OpenAI-compatible API client
 │   │   ├── pdf_parser.rs # PDF text extraction
 │   │   ├── prompts.rs    # AI prompt engineering
@@ -123,7 +123,7 @@ date: string
 subject: string
 ```
 
-### AI Configuration (Phase 2)
+### AI Configuration
 The AI integration uses environment variables for configuration:
 
 ```bash
@@ -198,15 +198,15 @@ cargo install cv_check
 - File watching for auto-rebuild
 - Comprehensive test suite
 - Strict code quality enforcement
-
-### 🚧 In Progress
-- Typst integration for PDF generation
-- Template embedding in binary
-- AI-powered CV tailoring (Phase 2)
+- AI-powered CV tailoring
   - PDF text extraction from job descriptions
   - OpenAI API integration with structured outputs
   - Prompt engineering for HR expertise
   - JSON schema definitions for CV optimization
+
+### 🚧 In Progress
+- Typst integration for PDF generation
+- Template embedding in binary
 
 ### 📋 Planned
 - DOCX export implementation
@@ -225,7 +225,7 @@ cargo install cv_check
 - **notify**: File system watching
 - **colored**: Terminal output styling
 
-### Phase 2 Dependencies
+### AI Dependencies
 - **openai-api-rs**: OpenAI-compatible API client
 - **pdf-extract** or **lopdf**: PDF text extraction
 - **serde_json**: Structured JSON handling
@@ -241,8 +241,8 @@ cargo install cv_check
 ## Constraints
 
 - Must maintain professional typesetting quality
-- Phase 1 must work offline (no external API dependencies)
-- Phase 2 AI features require internet connection and API key
+- Base features must work offline (no external API dependencies)
+- AI features require internet connection and API key
 - Must be installable as single binary
 - Must respect user privacy (no telemetry)
 - AI processing must use structured outputs for reliability

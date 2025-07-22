@@ -229,12 +229,14 @@ cv_check/
 │   ├── render/           # Output generation
 │   ├── themes/           # Theme definitions
 │   ├── templates/        # Markdown templates
-│   ├── ai/               # AI integration (Phase 2)
+│   ├── ai/               # AI integration
 │   │   ├── client.rs     # OpenAI API client
 │   │   ├── pdf_parser.rs # PDF text extraction
 │   │   ├── prompts.rs    # AI prompts
+│   │   ├── schema_gen.rs # JSON schema generation
 │   │   └── schemas.rs    # Structured outputs
 │   ├── config.rs         # Configuration types
+│   ├── constants.rs      # Shared constants
 │   └── error.rs          # Error handling
 ├── fonts/                # TTF font files
 ├── examples/             # Example documents

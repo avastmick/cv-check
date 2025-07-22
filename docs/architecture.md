@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. Phase 2 introduces AI-powered CV tailoring to optimize content for specific job descriptions.
+A Rust-based command-line tool that converts Markdown files with YAML frontmatter into professionally typeset CVs and cover letters. The system generates PDF (via Typst), DOCX, and HTML outputs with configurable themes. The tool includes AI-powered CV tailoring to optimize content for specific job descriptions.
 
 ## Core Principles
 
@@ -35,7 +35,7 @@ A Rust-based command-line tool that converts Markdown files with YAML frontmatte
          ▼
 ┌─────────────────┐     ┌─────────────────┐
 │   File Watch    │     │   AI Module     │
-│   (notify)      │     │  (Phase 2)      │
+│   (notify)      │     │                 │
 └─────────────────┘     │                 │
                         │  - PDF Parser   │
                         │  - LLM Client   │
@@ -86,16 +86,18 @@ cv_check/
 │   │   ├── mod.rs        // Theme management
 │   │   ├── font.rs       // Font themes
 │   │   └── color.rs      // Color themes
-│   ├── ai/               // AI integration (Phase 2)
+│   ├── ai/               // AI integration
 │   │   ├── mod.rs        // AI module interface
 │   │   ├── client.rs     // OpenAI-compatible API client
 │   │   ├── pdf_parser.rs // PDF text extraction
 │   │   ├── prompts.rs    // AI prompt engineering
+│   │   ├── schema_gen.rs // JSON schema generation
 │   │   └── schemas.rs    // Structured output schemas
 │   ├── templates/        // Markdown templates
 │   │   ├── cv_template.md
 │   │   └── letter_template.md
 │   ├── config.rs         // Configuration types
+│   ├── constants.rs      // Shared constants
 │   └── error.rs          // Error handling
 ├── fonts/                // TTF font files
 ├── examples/             // Example documents
@@ -173,7 +175,7 @@ pub struct Config {
 }
 ```
 
-## AI Module Architecture (Phase 2)
+## AI Module Architecture
 
 ### Components
 

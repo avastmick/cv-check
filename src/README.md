@@ -21,6 +21,12 @@ This directory contains the core Rust implementation of the CV Check CLI tool fo
   - `RecipientInfo` - Cover letter recipient details
   - Handles global configuration loading
 
+- **`constants.rs`** - Shared constants across the application
+  - Available theme names
+  - Default theme configuration
+  - Standard font sizes
+  - Markdown parser options
+
 - **`error.rs`** - Error types and handling
   - `CvError` enum - All possible application errors
   - Uses `thiserror` for ergonomic error definitions
@@ -52,6 +58,12 @@ This directory contains the core Rust implementation of the CV Check CLI tool fo
   - CV starter template
   - Cover letter template
 
+- **`ai/`** - AI-powered CV tailoring
+  - OpenAI-compatible API client
+  - PDF text extraction from job descriptions
+  - Structured JSON output schemas
+  - Prompt engineering for HR expertise
+
 ## Module Dependencies
 
 ```
@@ -60,7 +72,9 @@ main.rs
       └─> parser/ (document parsing)
       └─> render/ (output generation)
       └─> themes/ (styling)
+      └─> ai/ (CV tailoring)
       └─> config.rs (metadata structures)
+      └─> constants.rs (shared constants)
       └─> error.rs (error types)
 
 lib.rs (exports all public modules)
