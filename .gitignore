@@ -18,6 +18,7 @@ fonts/
 *.md
 *.pdf
 *.docx
+*.html
 !examples/*.md
 !examples/*.pdf
 !examples/*.docx
