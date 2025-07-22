@@ -5,11 +5,9 @@ A modern, Rust-based command-line tool for generating professional CVs and cover
 ## Features
 
 - **Simple Markdown Input**: Write your CV in plain Markdown with YAML frontmatter
-- **Beautiful Themes**: Choose from classic, modern, or sharp font and color themes
+- **Themes**: Choose from classic, modern, or sharp font and color themes
 - **Multiple Formats**: Generate PDF (via Typst), DOCX, and HTML
 - **Flexible Layouts**: Single column, two column, or condensed summary versions
-- **Live Reload**: Auto-rebuild on file changes with `watch` command
-- **Fast**: Sub-second PDF generation with Typst
 - **Zero Configuration**: Works out of the box with sensible defaults
 - **🆕 AI-Powered Tailoring**: Automatically optimize your CV for specific job descriptions
 - **🆕 Keyword Optimization**: Extract and incorporate relevant keywords from job postings
@@ -195,8 +193,6 @@ cv tailor my-cv.md job-description.pdf
 
 ### Supported AI Providers:
 
-- OpenAI (GPT-4o models)
-- Azure OpenAI
 - Any OpenAI-compatible API
 
 The AI uses structured outputs to ensure reliable, consistent results.
@@ -258,41 +254,6 @@ cargo test
 
 # For integration tests that generate files
 CV_CHECK_NO_OPEN=1 cargo test --test integration
-```
-
-### Batch Processing
-
-```bash
-# Process multiple CVs without opening each one
-export CV_CHECK_NO_OPEN=1
-for cv in *.md; do
-  cv build "$cv" --quiet
-done
-```
-
-## Project Structure
-
-```
-cv_check/
-├── src/
-│   ├── cli/              # Command interface
-│   ├── parser/           # Markdown/YAML parsing
-│   ├── render/           # Output generation
-│   ├── themes/           # Theme definitions
-│   ├── templates/        # Markdown templates
-│   ├── ai/               # AI integration
-│   │   ├── client.rs     # OpenAI API client
-│   │   ├── pdf_parser.rs # PDF text extraction
-│   │   ├── prompts.rs    # AI prompts
-│   │   ├── schema_gen.rs # JSON schema generation
-│   │   └── schemas.rs    # Structured outputs
-│   ├── config.rs         # Configuration types
-│   ├── constants.rs      # Shared constants
-│   └── error.rs          # Error handling
-├── fonts/                # TTF font files
-├── examples/             # Example documents
-├── cv/                   # Output directory
-└── tests/               # Test suite
 ```
 
 ## Contributing
