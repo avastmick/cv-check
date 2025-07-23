@@ -116,7 +116,7 @@ fn test_document_metadata_basic() {
 #[test]
 fn test_document_metadata_with_recipient() {
     let recipient = RecipientInfo {
-        name: "Hiring Manager".to_string(),
+        name: Some("Hiring Manager".to_string()),
         title: Some("Senior Recruiter".to_string()),
         company: Some("Tech Corp".to_string()),
         address: Some("123 Tech Street, Tech City, TC 12345".to_string()),
@@ -148,7 +148,7 @@ fn test_document_metadata_with_recipient() {
         .recipient
         .as_ref()
         .expect("Recipient should be present");
-    assert_eq!(recipient_info.name, "Hiring Manager");
+    assert_eq!(recipient_info.name, Some("Hiring Manager".to_string()));
     assert_eq!(recipient_info.title, Some("Senior Recruiter".to_string()));
     assert_eq!(recipient_info.company, Some("Tech Corp".to_string()));
     assert_eq!(
@@ -272,13 +272,13 @@ fn test_layout_options_custom() {
 #[test]
 fn test_recipient_info_complete() {
     let recipient = RecipientInfo {
-        name: "Dr. Sarah Wilson".to_string(),
+        name: Some("Dr. Sarah Wilson".to_string()),
         title: Some("Head of Engineering".to_string()),
         company: Some("Innovation Labs".to_string()),
         address: Some("456 Innovation Drive, Tech Valley, TV 67890".to_string()),
     };
 
-    assert_eq!(recipient.name, "Dr. Sarah Wilson");
+    assert_eq!(recipient.name, Some("Dr. Sarah Wilson".to_string()));
     assert_eq!(recipient.title, Some("Head of Engineering".to_string()));
     assert_eq!(recipient.company, Some("Innovation Labs".to_string()));
     assert_eq!(
@@ -290,13 +290,28 @@ fn test_recipient_info_complete() {
 #[test]
 fn test_recipient_info_minimal() {
     let recipient = RecipientInfo {
-        name: "Hiring Team".to_string(),
+        name: Some("Hiring Team".to_string()),
         title: None,
         company: None,
         address: None,
     };
 
-    assert_eq!(recipient.name, "Hiring Team");
+    assert_eq!(recipient.name, Some("Hiring Team".to_string()));
+    assert!(recipient.title.is_none());
+    assert!(recipient.company.is_none());
+    assert!(recipient.address.is_none());
+}
+
+#[test]
+fn test_recipient_info_all_none() {
+    let recipient = RecipientInfo {
+        name: None,
+        title: None,
+        company: None,
+        address: None,
+    };
+
+    assert!(recipient.name.is_none());
     assert!(recipient.title.is_none());
     assert!(recipient.company.is_none());
     assert!(recipient.address.is_none());

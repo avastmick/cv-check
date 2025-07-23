@@ -34,7 +34,7 @@ pub struct DocumentMetadata {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecipientInfo {
-    pub name: String,
+    pub name: Option<String>,
     pub title: Option<String>,
     pub company: Option<String>,
     pub address: Option<String>,

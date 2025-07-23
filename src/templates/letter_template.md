@@ -1,12 +1,12 @@
 ---
-# Recipient Information
+# Recipient Information (all fields optional)
 recipient:
-  name: Hiring Manager
-  title: Engineering Team
-  company: Company Name
-  address: |
-    123 Main Street
-    City, State 12345
+  name: # Optional - defaults to "To Whom It May Concern" if none provided
+  title: # Optional - job title or department
+  company: # Optional - company name
+  address: | # Optional - company address
+    # 123 Main Street
+    # City, State 12345
 
 # Your Information
 name: Your Name
@@ -19,7 +19,6 @@ font_theme: modern
 color_theme: modern
 
 # Letter Metadata
-date: December 15, 2024
 subject: Position Title - Job ID (if applicable)
 ---
 

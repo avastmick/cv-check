@@ -19,7 +19,6 @@ font_theme: modern
 color_theme: modern
 
 # Letter Metadata
-date: December 15, 2024
 subject: Senior Software Engineer Position - Job ID #SE2024
 ---
 

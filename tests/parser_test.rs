@@ -60,7 +60,7 @@ Dear Hiring Manager,";
         .recipient
         .as_ref()
         .expect("Recipient should be present");
-    assert_eq!(recipient.name, "Hiring Manager");
+    assert_eq!(recipient.name, Some("Hiring Manager".to_string()));
     assert_eq!(
         recipient
             .company

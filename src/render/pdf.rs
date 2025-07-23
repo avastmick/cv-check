@@ -1,7 +1,9 @@
+use crate::config::RecipientInfo;
 use crate::parser::Document;
 use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
 use anyhow::Result;
+use chrono::Local;
 use std::fmt::Write;
 use std::path::Path;
 use std::process::Command;
@@ -55,6 +57,42 @@ impl PdfRenderer {
         // Generate a complete Typst document without complex template functions
         let mut source = String::new();
 
+        // Add document setup
+        Self::add_document_setup(&mut source, doc, theme);
+
+        // Check if this is a cover letter
+        let is_cover_letter = doc.metadata.recipient.is_some();
+
+        // Add header section
+        if is_cover_letter {
+            Self::add_cover_letter_header(&mut source, doc);
+        } else {
+            Self::add_cv_header(&mut source, doc);
+        }
+
+        // Add recipient information for cover letters
+        if let Some(recipient) = &doc.metadata.recipient {
+            Self::add_recipient_section(&mut source, recipient, doc.metadata.subject.as_ref());
+        }
+
+        // Body content - convert markdown to Typst
+        let _ = writeln!(source, "// Content");
+        let mut typst_content = String::new();
+        Self::render_markdown_as_typst(&doc.content, &mut typst_content, theme);
+
+        // Post-process to wrap H2 sections in non-breakable blocks
+        let processed_content = Self::wrap_h2_sections(&typst_content);
+        source.push_str(&processed_content);
+
+        // For cover letters, add a signature section with contact info
+        if is_cover_letter {
+            Self::add_letter_signature(&mut source, doc);
+        }
+
+        source
+    }
+
+    fn add_document_setup(source: &mut String, doc: &Document, theme: &Theme) {
         // Document setup
         let _ = writeln!(
             source,
@@ -80,8 +118,50 @@ impl PdfRenderer {
             font_family,
             theme.color.to_typst_rgb("text")
         );
+    }
 
-        // Header section
+    fn add_cover_letter_header(source: &mut String, doc: &Document) {
+        // Cover letter header - simpler, more formal
+        let _ = writeln!(source, "#align(right)[");
+        let _ = writeln!(
+            source,
+            "  #text(size: 14pt, weight: \"bold\")[{}]",
+            doc.metadata.name
+        );
+
+        // Contact details in a more formal layout on separate lines
+        let _ = writeln!(source, "  #v(0.3em)");
+
+        // Location
+        if let Some(location) = &doc.metadata.location {
+            let _ = writeln!(source, "  #text(size: 11pt)[{location}]");
+            let _ = writeln!(source, "  #v(0.1em)");
+        }
+
+        // Phone
+        if let Some(phone) = &doc.metadata.phone {
+            let _ = writeln!(source, "  #text(size: 11pt)[{phone}]");
+            let _ = writeln!(source, "  #v(0.1em)");
+        }
+
+        // Email
+        let escaped_email = doc.metadata.email.replace('@', "\\@");
+        let _ = writeln!(source, "  #text(size: 11pt)[{escaped_email}]");
+
+        // Website (optional for letters)
+        if let Some(website) = &doc.metadata.website {
+            let _ = writeln!(source, "  #v(0.1em)");
+            let _ = writeln!(
+                source,
+                "  #text(size: 11pt)[#link(\"{website}\")[{website}]]"
+            );
+        }
+
+        let _ = writeln!(source, "]");
+    }
+
+    fn add_cv_header(source: &mut String, doc: &Document) {
+        // CV header - original centered layout with icons
         let _ = writeln!(source, "#align(center)[");
         let _ = writeln!(
             source,
@@ -138,52 +218,121 @@ impl PdfRenderer {
 
         let _ = writeln!(source, "]");
         let _ = writeln!(source, "#v(0.5em)");
+    }
 
-        // Add recipient information for cover letters
-        if let Some(recipient) = &doc.metadata.recipient {
-            let _ = writeln!(source, "// Recipient Information");
-            let _ = writeln!(source, "#text(size: 10pt)[");
-            let _ = writeln!(source, "  {}", recipient.name);
-            if let Some(title) = &recipient.title {
-                let _ = writeln!(source, "  #linebreak()");
-                let _ = writeln!(source, "  {title}");
+    fn add_recipient_section(
+        source: &mut String,
+        recipient: &RecipientInfo,
+        subject: Option<&String>,
+    ) {
+        // This is a cover letter - adjust formatting accordingly
+        let _ = writeln!(source, "// Cover Letter Formatting");
+
+        // Add extra space after header for letter format
+        let _ = writeln!(source, "#v(1.5em)");
+
+        // Date aligned to the left (standard business letter format) - always use today's date
+        // Use locale-aware formatting
+        let today = Local::now();
+        // Format: "15 December 2024" for international compatibility
+        let formatted_date = today.format("%-d %B %Y").to_string();
+        let _ = writeln!(source, "#align(left)[");
+        let _ = writeln!(
+            source,
+            "  #text(size: 11pt, weight: \"bold\")[{formatted_date}]"
+        );
+        let _ = writeln!(source, "]");
+        let _ = writeln!(source, "#v(1em)");
+
+        // Recipient information on the left
+        let _ = writeln!(source, "#align(left)[");
+        let _ = writeln!(source, "  #text(size: 11pt)[");
+
+        // Handle optional recipient name
+        let mut has_content = false;
+        if let Some(name) = &recipient.name {
+            let _ = writeln!(source, "    {name}");
+            has_content = true;
+        }
+
+        if let Some(title) = &recipient.title {
+            if has_content {
+                let _ = writeln!(source, "    #linebreak()");
             }
-            if let Some(company) = &recipient.company {
-                let _ = writeln!(source, "  #linebreak()");
-                let _ = writeln!(source, "  {company}");
+            let _ = writeln!(source, "    {title}");
+            has_content = true;
+        }
+
+        if let Some(company) = &recipient.company {
+            if has_content {
+                let _ = writeln!(source, "    #linebreak()");
             }
-            if let Some(address) = &recipient.address {
-                let _ = writeln!(source, "  #linebreak()");
-                // Split multiline address and add line breaks
-                for line in address.lines() {
-                    let _ = writeln!(source, "  {line}");
-                    let _ = writeln!(source, "  #linebreak()");
+            let _ = writeln!(source, "    #text(weight: \"bold\")[{company}]");
+            has_content = true;
+        }
+
+        if let Some(address) = &recipient.address {
+            // Split multiline address and add line breaks
+            for line in address.lines() {
+                if has_content {
+                    let _ = writeln!(source, "    #linebreak()");
                 }
-            }
-            let _ = writeln!(source, "]");
-            let _ = writeln!(source, "#v(1em)");
-
-            // Add date and subject if present
-            if let Some(date) = &doc.metadata.date {
-                let _ = writeln!(source, "#text(size: 10pt)[{date}]");
-                let _ = writeln!(source, "#v(1em)");
-            }
-            if let Some(subject) = &doc.metadata.subject {
-                let _ = writeln!(source, "#text(weight: \"bold\")[Subject: {subject}]");
-                let _ = writeln!(source, "#v(1em)");
+                let _ = writeln!(source, "    {line}");
+                has_content = true;
             }
         }
 
-        // Body content - convert markdown to Typst
-        let _ = writeln!(source, "// Content");
-        let mut typst_content = String::new();
-        Self::render_markdown_as_typst(&doc.content, &mut typst_content, theme);
+        // If no recipient info provided, use generic salutation
+        if !has_content {
+            let _ = writeln!(source, "    To Whom It May Concern");
+        }
 
-        // Post-process to wrap H2 sections in non-breakable blocks
-        let processed_content = Self::wrap_h2_sections(&typst_content);
-        source.push_str(&processed_content);
+        let _ = writeln!(source, "  ]");
+        let _ = writeln!(source, "]");
+        let _ = writeln!(source, "#v(1em)");
 
-        source
+        // Subject line if present
+        if let Some(subject) = subject {
+            let _ = writeln!(
+                source,
+                "#text(size: 11pt, weight: \"bold\")[Subject: {subject}]"
+            );
+            let _ = writeln!(source, "#v(1em)");
+        }
+
+        // Add extra space before letter body
+        let _ = writeln!(source, "#v(0.5em)");
+    }
+
+    fn add_letter_signature(source: &mut String, doc: &Document) {
+        // Add signature section at the end of the letter
+        let _ = writeln!(source, "\n#v(1em)");
+
+        // Name in bold
+        let _ = writeln!(source, "#text(weight: \"bold\")[{}]", doc.metadata.name);
+        let _ = writeln!(source, "#v(0.5em)");
+
+        // Contact info on separate lines with FontAwesome icons
+        let escaped_email = doc.metadata.email.replace('@', "\\@");
+        let _ = writeln!(
+            source,
+            "#text(font: \"FontAwesome\")[\\u{{f0e0}}] {escaped_email}"
+        );
+
+        if let Some(linkedin) = &doc.metadata.linkedin {
+            let _ = writeln!(source, "#text(font: \"FontAwesome\")[\\u{{f0e1}}] #link(\"https://linkedin.com/in/{linkedin}\")[linkedin.com/in/{linkedin}]");
+        }
+
+        if let Some(github) = &doc.metadata.github {
+            let _ = writeln!(source, "#text(font: \"FontAwesome\")[\\u{{f09b}}] #link(\"https://github.com/{github}\")[github.com/{github}]");
+        }
+
+        if let Some(website) = &doc.metadata.website {
+            let _ = writeln!(
+                source,
+                "#text(font: \"FontAwesome\")[\\u{{f015}}] #link(\"{website}\")[{website}]"
+            );
+        }
     }
 
     fn render_markdown_as_typst(content: &str, output: &mut String, theme: &Theme) {
