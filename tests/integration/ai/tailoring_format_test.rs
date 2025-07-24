@@ -66,8 +66,8 @@ fn create_test_tailored_cv() -> TailoredCV {
 fn verify_content_sections(content: &str, tailored_cv: &TailoredCV) {
     // Verify Professional Summary section
     assert!(
-        content.contains("## Professional Summary"),
-        "Should contain Professional Summary header"
+        content.contains("# Professional Summary"),
+        "Should contain Professional Summary header as H1"
     );
     assert!(
         content.contains(&tailored_cv.professional_summary),
@@ -76,19 +76,19 @@ fn verify_content_sections(content: &str, tailored_cv: &TailoredCV) {
 
     // Verify Experience section is renamed to "Relevant Experience"
     assert!(
-        !content.contains("## Experience\n"),
+        !content.contains("# Experience\n"),
         "Should NOT contain 'Experience' header"
     );
     assert!(
-        content.contains("## Relevant Experience"),
-        "Should contain 'Relevant Experience' header"
+        content.contains("# Relevant Experience"),
+        "Should contain 'Relevant Experience' header as H1"
     );
 
     // Verify experiences are included
     for exp in &tailored_cv.experiences {
         assert!(
-            content.contains(&format!("### {} at {}", exp.title, exp.company)),
-            "Should contain job title and company"
+            content.contains(&format!("## {} at {}", exp.title, exp.company)),
+            "Should contain job title and company as H2"
         );
         assert!(
             content.contains(&format!("*{}*", exp.duration)),
@@ -255,14 +255,14 @@ fn generate_tailored_content(tailored_cv: &TailoredCV) -> String {
     let mut content = String::new();
 
     // Add professional summary
-    content.push_str("## Professional Summary\n\n");
+    content.push_str("# Professional Summary\n\n");
     content.push_str(&tailored_cv.professional_summary);
     content.push_str("\n\n");
 
     // Add experiences with "Relevant Experience" header
-    content.push_str("## Relevant Experience\n\n");
+    content.push_str("# Relevant Experience\n\n");
     for exp in &tailored_cv.experiences {
-        let _ = writeln!(&mut content, "### {} at {}", exp.title, exp.company);
+        let _ = writeln!(&mut content, "## {} at {}", exp.title, exp.company);
         let _ = writeln!(&mut content, "*{}*\n", exp.duration);
         for highlight in &exp.highlights {
             let _ = writeln!(&mut content, "- {highlight}");
@@ -318,9 +318,9 @@ fn generate_tailored_content_with_ordering(tailored_cv: &TailoredCV) -> String {
         b_year.cmp(&a_year) // Reverse order for most recent first
     });
 
-    content.push_str("## Relevant Experience\n\n");
+    content.push_str("# Relevant Experience\n\n");
     for exp in &sorted_experiences {
-        let _ = writeln!(&mut content, "### {} at {}", exp.title, exp.company);
+        let _ = writeln!(&mut content, "## {} at {}", exp.title, exp.company);
         let _ = writeln!(&mut content, "*{}*\n", exp.duration);
         for highlight in &exp.highlights {
             let _ = writeln!(&mut content, "- {highlight}");
@@ -365,7 +365,7 @@ fn generate_tailored_content_with_education(
     content.push_str(&tailored_cv.professional_summary);
     content.push_str("\n\n");
 
-    content.push_str("## Relevant Experience\n\n");
+    content.push_str("# Relevant Experience\n\n");
     // Add experiences...
 
     // Preserve Education section

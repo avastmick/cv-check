@@ -302,7 +302,7 @@ impl CvGenerator {
         let mut content = String::new();
 
         // Add professional summary
-        content.push_str("## Professional Summary\n\n");
+        content.push_str("# Professional Summary\n\n");
         content.push_str(&tailored_cv.professional_summary);
         content.push_str("\n\n");
 
@@ -316,9 +316,9 @@ impl CvGenerator {
         });
 
         // Add experiences with "Relevant Experience" header
-        content.push_str("## Relevant Experience\n\n");
+        content.push_str("# Relevant Experience\n\n");
         for exp in &sorted_experiences {
-            writeln!(&mut content, "### {} at {}", exp.title, exp.company)?;
+            writeln!(&mut content, "## {} at {}", exp.title, exp.company)?;
             writeln!(&mut content, "*{}*\n", exp.duration)?;
             for highlight in &exp.highlights {
                 writeln!(&mut content, "- {highlight}")?;
