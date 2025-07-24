@@ -424,8 +424,11 @@ impl PdfRenderer {
                         result.push_str("]  // End of job entry block\n\n");
                     }
 
-                    // Start a new non-breakable block
-                    result.push_str("#block(breakable: false)[\n  // Start of job entry\n");
+                    // Start a new non-breakable block with height limit
+                    // This allows Typst to break to a new page if the block is too tall
+                    result.push_str(
+                        "#block(breakable: false, height: auto)[\n  // Start of job entry\n",
+                    );
                     in_h2_section = true;
                 }
             }

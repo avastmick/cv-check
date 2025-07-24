@@ -189,6 +189,72 @@ impl CvGenerator {
         warn!("{}", "Preview server not yet implemented".yellow());
     }
 
+    /// Parse end year from duration string for sorting
+    fn parse_end_year(duration: &str) -> u32 {
+        if duration.contains("Present") {
+            9999 // Use high value for current positions
+        } else {
+            // Extract last 4-digit year from duration
+            duration
+                .split_whitespace()
+                .filter_map(|word| word.parse::<u32>().ok())
+                .filter(|&year| (1900..=2100).contains(&year))
+                .next_back()
+                .unwrap_or(0)
+        }
+    }
+
+    /// Extract Education section from original CV content
+    fn extract_education_section(content: &str) -> Option<String> {
+        // Find the Education section - check both H1 and H2 formats
+        let edu_h1 = content.find("# Education");
+        let edu_h2 = content.find("## Education");
+
+        if let Some(edu_start) = edu_h1.or(edu_h2) {
+            // Determine which header was found and its length
+            let header_len = if edu_h1.is_some() {
+                "# Education".len()
+            } else {
+                "## Education".len()
+            };
+            let search_start = edu_start + header_len;
+
+            // Look for next major section - check both H1 and H2 markers
+            let section_markers = [
+                "# Other",
+                "# Skills",
+                "# Projects",
+                "# Certifications",
+                "# Awards",
+                "## Other",
+                "## Skills",
+                "## Projects",
+                "## Certifications",
+                "## Awards",
+            ];
+
+            let mut edu_end = content.len();
+            for marker in &section_markers {
+                if let Some(pos) = content[search_start..].find(marker) {
+                    edu_end = edu_end.min(search_start + pos);
+                }
+            }
+
+            // Extract and trim the education section
+            let education_content = content[edu_start..edu_end].trim_end();
+            if !education_content.is_empty()
+                && education_content != "# Education"
+                && education_content != "## Education"
+            {
+                Some(education_content.to_string())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Generates the frontmatter for a tailored CV.
     fn generate_frontmatter(original_doc: &Document, options: &TailorOptions) -> Result<String> {
         let mut frontmatter = String::from("---\n");
@@ -229,7 +295,10 @@ impl CvGenerator {
     }
 
     /// Generates the content sections for a tailored CV.
-    fn generate_tailored_content(tailored_cv: &crate::ai::schemas::TailoredCV) -> Result<String> {
+    fn generate_tailored_content(
+        tailored_cv: &crate::ai::schemas::TailoredCV,
+        original_doc: &Document,
+    ) -> Result<String> {
         let mut content = String::new();
 
         // Add professional summary
@@ -237,9 +306,18 @@ impl CvGenerator {
         content.push_str(&tailored_cv.professional_summary);
         content.push_str("\n\n");
 
-        // Add experiences
-        content.push_str("## Experience\n\n");
-        for exp in &tailored_cv.experiences {
+        // Sort experiences by date (most recent first)
+        let mut sorted_experiences = tailored_cv.experiences.clone();
+        sorted_experiences.sort_by(|a, b| {
+            // Parse years from duration strings
+            let a_year = Self::parse_end_year(&a.duration);
+            let b_year = Self::parse_end_year(&b.duration);
+            b_year.cmp(&a_year) // Reverse order for most recent first
+        });
+
+        // Add experiences with "Relevant Experience" header
+        content.push_str("## Relevant Experience\n\n");
+        for exp in &sorted_experiences {
             writeln!(&mut content, "### {} at {}", exp.title, exp.company)?;
             writeln!(&mut content, "*{}*\n", exp.duration)?;
             for highlight in &exp.highlights {
@@ -252,6 +330,12 @@ impl CvGenerator {
                 exp.relevance_score
             )?;
             content.push('\n');
+        }
+
+        // Extract and preserve Education section from original document
+        if let Some(education_section) = Self::extract_education_section(&original_doc.content) {
+            content.push_str(&education_section);
+            content.push_str("\n\n");
         }
 
         // Add skills
@@ -359,7 +443,7 @@ impl CvGenerator {
 
         // Generate the tailored markdown
         let frontmatter = Self::generate_frontmatter(&original_doc, options)?;
-        let content = Self::generate_tailored_content(&tailored_cv)?;
+        let content = Self::generate_tailored_content(&tailored_cv, &original_doc)?;
         let tailored_markdown = frontmatter + &content;
 
         // Determine output path

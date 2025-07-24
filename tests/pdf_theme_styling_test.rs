@@ -55,10 +55,10 @@ fn test_modern_theme_h1_spacing() {
 
     let typst_source = renderer.generate_typst_source_for_testing(&doc, &theme);
 
-    // H1 should have increased spacing above (2.5em for modern theme)
+    // H1 should have reduced spacing above (1.0em for modern theme to prevent page breaks)
     assert!(
-        typst_source.contains("#v(2.5em)") && typst_source.contains("text(size: 16pt"),
-        "H1 headings should have 2.5em vertical spacing above in modern theme"
+        typst_source.contains("#v(1em)") && typst_source.contains("text(size: 16pt"),
+        "H1 headings should have 1.0em vertical spacing above in modern theme"
     );
 }
 

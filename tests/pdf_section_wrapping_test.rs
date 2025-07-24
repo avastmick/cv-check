@@ -63,7 +63,7 @@ fn test_h2_sections_are_wrapped_in_typst_source() {
 
     // Verify that H2 sections are wrapped in non-breakable blocks
     assert!(
-        typst_source.contains("#block(breakable: false)["),
+        typst_source.contains("#block(breakable: false"),
         "Typst source should contain non-breakable blocks for job entries"
     );
 

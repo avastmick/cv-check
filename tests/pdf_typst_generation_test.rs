@@ -127,7 +127,7 @@ fn test_h2_wrapping_pattern() {
     let mut found_wrapped_h2 = false;
 
     for (i, line) in lines.iter().enumerate() {
-        if line.contains("#block(breakable: false)[") {
+        if line.contains("#block(breakable: false") {
             // Check that within a few lines we have the H2 heading
             for check_line in lines.iter().skip(i + 1).take(9) {
                 if check_line.contains("text(size: 14pt, weight: \"bold\"") {

@@ -55,12 +55,13 @@ fn debug_typst_output() {
     println!("{typst_source}");
     println!("=== END TYPST SOURCE ===\n");
 
-    // Count blocks
-    let block_count = typst_source.matches("#block(breakable: false)[").count();
+    // Count non-breakable blocks - these are used for H2 sections (job entries)
+    // Match both old and new formats
+    let block_count = typst_source.matches("#block(breakable: false").count();
     println!("Found {block_count} non-breakable blocks");
 
     assert!(
-        block_count > 0,
+        block_count >= 1,
         "Should have at least one non-breakable block"
     );
 }

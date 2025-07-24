@@ -83,8 +83,8 @@ impl ColorTheme {
             h2_color: Some("#607D8B".to_string()), // Blue-grey
             h3_color: Some("#424242".to_string()), // Dark grey
             separator_thickness: Some(1.0),        // Thinner line
-            h1_spacing_above: Some(2.5),           // More space above H1
-            h1_spacing_below: Some(0.8),           // Standard below H1
+            h1_spacing_above: Some(1.0),           // Reduced space above H1 to prevent page breaks
+            h1_spacing_below: Some(0.5),           // Reduced below H1
             h2_spacing_above: Some(1.2),           // Default H2 spacing
             h2_spacing_below: Some(0.8),           // Default H2 spacing
             h3_spacing_above: Some(1.0),           // Increased spacing

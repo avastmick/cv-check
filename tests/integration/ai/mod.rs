@@ -9,3 +9,4 @@
 pub mod cv_tailoring_test;
 pub mod full_workflow_test;
 pub mod structured_output_test;
+pub mod tailoring_format_test;
