@@ -403,11 +403,13 @@ impl PdfRenderer {
             }
 
             // Check if this is the start of an H2 section
-            // Look for pattern: #v(XXem) followed by #block and then H2 text
+            // Look for pattern: #v(XXem) followed by a single-line #block with H2 text
             if line.contains("#v(")
                 && line.contains("em)")
                 && i + 1 < lines.len()
                 && lines[i + 1].contains("#block(above: 0em, below:")
+                && lines[i + 1].contains("em)[")
+            // Single-line block pattern for H2
             {
                 // Look ahead to confirm this is an H2
                 let mut is_h2 = false;
@@ -419,6 +421,7 @@ impl PdfRenderer {
                 }
 
                 if is_h2 {
+                    // Wrap all H2 sections (job entries, education entries, etc.)
                     // If we were already in an H2 section, close it
                     if in_h2_section {
                         result.push_str("]  // End of job entry block\n\n");
@@ -433,20 +436,30 @@ impl PdfRenderer {
                 }
             }
 
-            // Check if this is an H1 heading that would end the current H2 section
-            if in_h2_section
-                && line.contains("#v(")
-                && line.contains("em)")
-                && i + 1 < lines.len()
-                && lines[i + 1].contains("#block(above: 0em, below:")
-            {
-                // Look ahead to confirm this is an H1
-                for check_line in lines.iter().skip(i + 2).take(3) {
-                    if check_line.contains("text(size: 16pt, weight: \"bold\"") {
-                        // Close the current H2 section before the H1
+            // Check if this is an H1 heading
+            if line.contains("#v(") && line.contains("em)") {
+                // Look ahead to see if this is followed by an H1 block
+                let mut is_h1 = false;
+
+                // Check the next several lines for H1 characteristics
+                for j in 1..=10 {
+                    if i + j >= lines.len() {
+                        break;
+                    }
+                    let next_line = lines[i + j];
+
+                    // Check for H1 text
+                    if next_line.contains("text(size: 16pt, weight: \"bold\"") {
+                        is_h1 = true;
+                        break;
+                    }
+                }
+
+                if is_h1 {
+                    // If we were in an H2 section, close it before the H1
+                    if in_h2_section {
                         result.push_str("]  // End of job entry block\n\n");
                         in_h2_section = false;
-                        break;
                     }
                 }
             }
@@ -508,12 +521,15 @@ impl PdfRenderer {
                 match level {
                     HeadingLevel::H1 => {
                         // Top-level sections (Experience, Education, Skills)
+                        // Use Typst's keep-with-next feature to prevent orphaned headings
                         let _ = writeln!(output, "\n#v({}em)", theme.color.get_h1_spacing_above());
-                        let _ = writeln!(
-                            output,
-                            "#block(above: 0em, below: {}em)[",
-                            theme.color.get_h1_spacing_below()
-                        );
+                        let _ = writeln!(output, "#block(");
+                        let _ = writeln!(output, "  above: 0em,");
+                        let _ =
+                            writeln!(output, "  below: {}em,", theme.color.get_h1_spacing_below());
+                        let _ = writeln!(output, "  breakable: false,");
+                        let _ = writeln!(output, "  height: auto");
+                        let _ = writeln!(output, ")[");
                         let _ = write!(
                             output,
                             "  #text(size: 16pt, weight: \"bold\", fill: {})[",
