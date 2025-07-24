@@ -1,6 +1,11 @@
-# CV Generator
+# CV Tailoring and Formatting CLI
 
-A modern, Rust-based command-line tool for generating professional CVs and cover letters from Markdown files with YAML frontmatter. Now with AI-powered CV tailoring to optimize your CV for specific job descriptions.
+A modern, Rust-based command-line tool for generating professional CVs and cover letters from Markdown files with YAML frontmatter. Now with AI-powered CV tailoring to optimise your CV for specific job descriptions.
+
+Why? No one actually reads your hand-crafted CV, they are all loaded into a system; format incorrectly, information is lost and you don't get the job! This tool offers an easier means of tailoring HR ATS-compliant CVs to jobs, with AI improvement and focus. Tested on most current job sites to correctly extract roles, experience, skills, etc.
+
+> [!CAUTION]
+> Under active development - breaking changes often. Some documentation may be out of date, or not aligned with function. Wait until first release.
 
 ## Features
 
@@ -9,9 +14,9 @@ A modern, Rust-based command-line tool for generating professional CVs and cover
 - **Multiple Formats**: Generate PDF (via Typst), DOCX, and HTML
 - **Flexible Layouts**: Single column, two column, or condensed summary versions
 - **Zero Configuration**: Works out of the box with sensible defaults
-- **🆕 AI-Powered Tailoring**: Automatically optimize your CV for specific job descriptions
-- **🆕 Keyword Optimization**: Extract and incorporate relevant keywords from job postings
-- **🆕 ATS-Friendly**: Ensure your CV passes Applicant Tracking Systems
+- **AI-Powered Tailoring**: Automatically optimise your CV for specific job descriptions
+- **Keyword Optimisation**: Extract and incorporate relevant keywords from job postings
+- **ATS-Friendly**: Ensure your CV passes Applicant Tracking Systems
 
 ## Prerequisites
 
@@ -51,10 +56,11 @@ cargo install cv_check
 
 ## Quick Start
 
-1. Create a new CV template:
+1. Create a new CV template / Cover letter:
 
 ```bash
 cv new cv > my-cv.md
+cv new coverletter > my-cover-letter.md
 ```
 
 2. Edit `my-cv.md` with your information:
@@ -90,7 +96,6 @@ cv build my-cv.md
 
 ```bash
 cv build <input.md>         # Generate CV/letter (PDF, DOCX, HTML)
-cv watch <input.md>         # Auto-rebuild on changes
 cv new cv                   # Create CV template
 cv new letter              # Create letter template
 cv themes                  # List available themes
@@ -149,7 +154,7 @@ date: string
 subject: string
 ```
 
-## Customization
+## Customisation
 
 Override any theme setting in your YAML frontmatter:
 
@@ -161,7 +166,7 @@ fonts:
   header:
     family: "Playfair Display"
 
-# Use modern colors but customize primary
+# Use modern colors but customise primary
 color_theme: modern
 colors:
   primary: "#1E40AF"
@@ -170,23 +175,23 @@ colors:
 
 ## AI-Powered CV Tailoring
 
-The `tailor` command uses AI to optimize your CV for specific job descriptions:
+The `tailor` command uses AI to optimise your CV for specific job descriptions:
 
 ```bash
 # Tailor your CV to a job description
 cv tailor my-cv.md job-description.pdf
 
-# Output: my-cv-tailored.md (optimized markdown)
+# Output: my-cv-tailored.md (optimised markdown)
 #         my-cv-tailored.pdf (ready-to-send PDF)
 ```
 
 ### How it works:
 
 1. **Extracts text** from the job description PDF
-2. **Analyzes requirements** using AI with HR expertise
-3. **Optimizes your CV** by:
+2. **Analyses requirements** using AI with HR expertise
+3. **Optimises your CV** by:
    - Reordering experiences to match job priorities
-   - Emphasizing relevant skills and keywords
+   - Emphasising relevant skills and keywords
    - Adjusting professional summary
    - Ensuring ATS compatibility
 4. **Generates tailored output** maintaining your chosen theme
@@ -201,9 +206,10 @@ The AI uses structured outputs to ensure reliable, consistent results.
 
 ```bash
 # Clone and build
-git clone https://github.com/yourusername/cv_gen
-cd cv_gen
-cargo build --release
+git clone https://github.com/yourusername/cv_check
+cd cv_check
+# Install the pre-commit checks to avoid issues upstream
+pre-commit install
 
 # Run tests
 cargo test
@@ -212,7 +218,7 @@ cargo test
 cargo clippy --all-targets --all-features
 
 # Check test coverage
-cargo tarpaulin --out Html
+cargo tarpaulin
 ```
 
 ## CI/CD Usage
@@ -263,7 +269,6 @@ This project follows strict code quality standards:
 - No unsafe code
 - No unwrap() - proper error handling
 - 80% test coverage target
-- Test-Driven Development (TDD)
 
 ## License
 
