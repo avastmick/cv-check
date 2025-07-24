@@ -22,6 +22,8 @@ fonts/
 !examples/*.md
 !examples/*.pdf
 !examples/*.docx
+# READMEs are okay
+!*/README.md
 
 # Specific test files (already covered by *.md and *.pdf above)
 no_extension.html
