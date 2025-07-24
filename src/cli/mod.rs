@@ -4,7 +4,7 @@ use crate::ai::{extract_text_from_pdf, AIClient};
 use crate::config::GlobalConfig;
 use crate::parser::Document;
 use crate::render::Renderer;
-use crate::themes::Theme;
+use crate::themes::{get_theme_info, Theme};
 use anyhow::Result;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -139,16 +139,9 @@ impl CvGenerator {
         if fonts {
             println!("{}", "Font Themes:".bold());
             for theme in font_themes {
-                println!(
-                    "  • {} - {}",
-                    theme.cyan(),
-                    match theme {
-                        "classic" => "Traditional serif fonts (Georgia/Times)",
-                        "modern" => "Clean sans-serif (Inter/Open Sans)",
-                        "sharp" => "Bold geometric (Montserrat/Roboto)",
-                        _ => "Unknown theme",
-                    }
-                );
+                let description =
+                    get_theme_info(theme).map_or("Unknown theme", |info| info.font_description);
+                println!("  • {} - {}", theme.cyan(), description);
             }
             if colors {
                 println!();
@@ -158,16 +151,9 @@ impl CvGenerator {
         if colors {
             println!("{}", "Color Themes:".bold());
             for theme in color_themes {
-                println!(
-                    "  • {} - {}",
-                    theme.cyan(),
-                    match theme {
-                        "classic" => "Navy and burgundy (traditional)",
-                        "modern" => "Blue and teal (tech)",
-                        "sharp" => "Purple and pink (creative)",
-                        _ => "Unknown theme",
-                    }
-                );
+                let description =
+                    get_theme_info(theme).map_or("Unknown theme", |info| info.color_description);
+                println!("  • {} - {}", theme.cyan(), description);
             }
         }
     }

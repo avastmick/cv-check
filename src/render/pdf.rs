@@ -1,5 +1,5 @@
 use crate::config::RecipientInfo;
-use crate::constants::icons;
+use crate::constants::{icons, layout};
 use crate::parser::Document;
 use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
@@ -102,21 +102,22 @@ impl PdfRenderer {
         );
         let _ = writeln!(
             source,
-            "#set page(paper: \"a4\", margin: (top: 1.5cm, bottom: 1.5cm, left: 2cm, right: 2cm))"
+            "#set page(paper: \"a4\", margin: (top: {}, bottom: {}, left: {}, right: {}))",
+            layout::margins::TOP,
+            layout::margins::BOTTOM,
+            layout::margins::LEFT,
+            layout::margins::RIGHT
         );
 
-        // Font configuration - use bundled fonts
-        let font_family = match doc.metadata.font_theme.as_str() {
-            "classic" => "Georgia",
-            "sharp" => "Montserrat",
-            _ => "Inter", // modern and other themes use Inter
-        };
+        // Font configuration - use header font from theme
+        let font_family = &theme.font.header.family;
 
         // Set default text properties
         let _ = writeln!(
             source,
-            "#set text(font: \"{}\", size: 11pt, fill: {})",
+            "#set text(font: \"{}\", size: {}, fill: {})",
             font_family,
+            layout::font_sizes::NORMAL,
             theme.color.to_typst_rgb("text")
         );
     }
@@ -126,35 +127,49 @@ impl PdfRenderer {
         let _ = writeln!(source, "#align(right)[");
         let _ = writeln!(
             source,
-            "  #text(size: 14pt, weight: \"bold\")[{}]",
+            "  #text(size: {}, weight: \"bold\")[{}]",
+            layout::font_sizes::SUBSECTION,
             doc.metadata.name
         );
 
         // Contact details in a more formal layout on separate lines
-        let _ = writeln!(source, "  #v(0.3em)");
+        let _ = writeln!(source, "  #v({})", layout::spacing::TINY);
 
         // Location
         if let Some(location) = &doc.metadata.location {
-            let _ = writeln!(source, "  #text(size: 11pt)[{location}]");
-            let _ = writeln!(source, "  #v(0.1em)");
+            let _ = writeln!(
+                source,
+                "  #text(size: {})[{location}]",
+                layout::font_sizes::NORMAL
+            );
+            let _ = writeln!(source, "  #v({})", layout::spacing::EXTRA_TINY);
         }
 
         // Phone
         if let Some(phone) = &doc.metadata.phone {
-            let _ = writeln!(source, "  #text(size: 11pt)[{phone}]");
-            let _ = writeln!(source, "  #v(0.1em)");
+            let _ = writeln!(
+                source,
+                "  #text(size: {})[{phone}]",
+                layout::font_sizes::NORMAL
+            );
+            let _ = writeln!(source, "  #v({})", layout::spacing::EXTRA_TINY);
         }
 
         // Email
         let escaped_email = doc.metadata.email.replace('@', "\\@");
-        let _ = writeln!(source, "  #text(size: 11pt)[{escaped_email}]");
+        let _ = writeln!(
+            source,
+            "  #text(size: {})[{escaped_email}]",
+            layout::font_sizes::NORMAL
+        );
 
         // Website (optional for letters)
         if let Some(website) = &doc.metadata.website {
-            let _ = writeln!(source, "  #v(0.1em)");
+            let _ = writeln!(source, "  #v({})", layout::spacing::EXTRA_TINY);
             let _ = writeln!(
                 source,
-                "  #text(size: 11pt)[#link(\"{website}\")[{website}]]"
+                "  #text(size: {})[#link(\"{website}\")[{website}]]",
+                layout::font_sizes::NORMAL
             );
         }
 
@@ -166,20 +181,25 @@ impl PdfRenderer {
         let _ = writeln!(source, "#align(center)[");
         let _ = writeln!(
             source,
-            "  #text(size: 36pt, weight: \"bold\")[{}]",
+            "  #text(size: {}, weight: \"bold\")[{}]",
+            layout::font_sizes::TITLE,
             doc.metadata.name
         );
 
         // Location (if present)
         if let Some(location) = &doc.metadata.location {
-            let _ = writeln!(source, "  #v(0.2em)");
-            let _ = writeln!(source, "  #text(size: 11pt, style: \"italic\")[{location}]");
+            let _ = writeln!(source, "  #v({})", layout::spacing::VERY_TINY);
+            let _ = writeln!(
+                source,
+                "  #text(size: {}, style: \"italic\")[{location}]",
+                layout::font_sizes::NORMAL
+            );
         }
 
-        let _ = writeln!(source, "  #v(0.3em)");
+        let _ = writeln!(source, "  #v({})", layout::spacing::TINY);
 
         // Contact info - all on one line with icons
-        let _ = writeln!(source, "  #text(size: 10pt)[");
+        let _ = writeln!(source, "  #text(size: {})[", layout::font_sizes::SMALL);
         let mut contact_parts = vec![];
 
         // Phone with FontAwesome icon
@@ -226,7 +246,7 @@ impl PdfRenderer {
         let _ = writeln!(source, "  ]");
 
         let _ = writeln!(source, "]");
-        let _ = writeln!(source, "#v(0.5em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::SMALL);
     }
 
     fn add_recipient_section(
@@ -238,7 +258,7 @@ impl PdfRenderer {
         let _ = writeln!(source, "// Cover Letter Formatting");
 
         // Add extra space after header for letter format
-        let _ = writeln!(source, "#v(1.5em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::LARGE);
 
         // Date aligned to the left (standard business letter format) - always use today's date
         // Use locale-aware formatting
@@ -248,14 +268,15 @@ impl PdfRenderer {
         let _ = writeln!(source, "#align(left)[");
         let _ = writeln!(
             source,
-            "  #text(size: 11pt, weight: \"bold\")[{formatted_date}]"
+            "  #text(size: {}, weight: \"bold\")[{formatted_date}]",
+            layout::font_sizes::NORMAL
         );
         let _ = writeln!(source, "]");
-        let _ = writeln!(source, "#v(1em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::MEDIUM);
 
         // Recipient information on the left
         let _ = writeln!(source, "#align(left)[");
-        let _ = writeln!(source, "  #text(size: 11pt)[");
+        let _ = writeln!(source, "  #text(size: {})[", layout::font_sizes::NORMAL);
 
         // Handle optional recipient name
         let mut has_content = false;
@@ -298,28 +319,29 @@ impl PdfRenderer {
 
         let _ = writeln!(source, "  ]");
         let _ = writeln!(source, "]");
-        let _ = writeln!(source, "#v(1em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::MEDIUM);
 
         // Subject line if present
         if let Some(subject) = subject {
             let _ = writeln!(
                 source,
-                "#text(size: 11pt, weight: \"bold\")[Subject: {subject}]"
+                "#text(size: {}, weight: \"bold\")[Subject: {subject}]",
+                layout::font_sizes::NORMAL
             );
-            let _ = writeln!(source, "#v(1em)");
+            let _ = writeln!(source, "#v({})", layout::spacing::MEDIUM);
         }
 
         // Add extra space before letter body
-        let _ = writeln!(source, "#v(0.5em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::SMALL);
     }
 
     fn add_letter_signature(source: &mut String, doc: &Document) {
         // Add signature section at the end of the letter
-        let _ = writeln!(source, "\n#v(1em)");
+        let _ = writeln!(source, "\n#v({})", layout::spacing::MEDIUM);
 
         // Name in bold
         let _ = writeln!(source, "#text(weight: \"bold\")[{}]", doc.metadata.name);
-        let _ = writeln!(source, "#v(0.5em)");
+        let _ = writeln!(source, "#v({})", layout::spacing::SMALL);
 
         // Contact info on separate lines with FontAwesome icons
         let escaped_email = doc.metadata.email.replace('@', "\\@");
@@ -427,7 +449,10 @@ impl PdfRenderer {
                 // Look ahead to confirm this is an H2
                 let mut is_h2 = false;
                 for check_line in lines.iter().skip(i + 2).take(3) {
-                    if check_line.contains("text(size: 14pt, weight: \"bold\"") {
+                    if check_line.contains(&format!(
+                        "text(size: {}, weight: \"bold\"",
+                        layout::font_sizes::SUBSECTION
+                    )) {
                         is_h2 = true;
                         break;
                     }
@@ -545,7 +570,8 @@ impl PdfRenderer {
                         let _ = writeln!(output, ")[");
                         let _ = write!(
                             output,
-                            "  #text(size: 16pt, weight: \"bold\", fill: {})[",
+                            "  #text(size: {}, weight: \"bold\", fill: {})[",
+                            layout::font_sizes::SECTION,
                             theme.color.get_h1_color()
                         );
                     }
@@ -571,15 +597,24 @@ impl PdfRenderer {
                         );
                         let _ = write!(
                             output,
-                            "  #text(size: 12pt, weight: \"semibold\", fill: {})[",
+                            "  #text(size: {}, weight: \"semibold\", fill: {})[",
+                            layout::font_sizes::MEDIUM,
                             theme.color.get_h3_color()
                         );
                     }
                     _ => {
                         // H4, H5, H6 - rarely used
-                        let _ = writeln!(output, "\n#v(0.5em)");
-                        let _ = writeln!(output, "#block(above: 0em, below: 0.2em)[");
-                        let _ = write!(output, "  #text(size: 11pt, weight: \"medium\")[");
+                        let _ = writeln!(output, "\n#v({})", layout::spacing::SMALL);
+                        let _ = writeln!(
+                            output,
+                            "#block(above: 0em, below: {})[",
+                            layout::spacing::VERY_TINY
+                        );
+                        let _ = write!(
+                            output,
+                            "  #text(size: {}, weight: \"medium\")[",
+                            layout::font_sizes::NORMAL
+                        );
                     }
                 }
             }
@@ -642,7 +677,7 @@ impl PdfRenderer {
                     let _ = writeln!(output, "]");
                     // Add extra space after H1 with line
                     if matches!(context.heading_level, HeadingLevel::H1) {
-                        let _ = writeln!(output, "#v(0.2em)");
+                        let _ = writeln!(output, "#v({})", layout::spacing::VERY_TINY);
                     }
                     context.in_heading = false;
                 }
@@ -703,9 +738,11 @@ impl PdfRenderer {
                 // Company name in bold, location in regular weight
                 let _ = write!(
                     output,
-                    "  #text(size: 14pt, weight: \"bold\", fill: {})[{}] #text(size: 14pt, weight: \"regular\", fill: {})[{}]",
+                    "  #text(size: {}, weight: \"bold\", fill: {})[{}] #text(size: {}, weight: \"regular\", fill: {})[{}]",
+                    layout::font_sizes::SUBSECTION,
                     theme.color.get_h2_color(),
                     company,
+                    layout::font_sizes::SUBSECTION,
                     theme.color.get_h2_color(),
                     location
                 );
@@ -713,7 +750,8 @@ impl PdfRenderer {
                 // No parentheses, render normally with bold
                 let _ = write!(
                     output,
-                    "  #text(size: 14pt, weight: \"bold\", fill: {})[{}]",
+                    "  #text(size: {}, weight: \"bold\", fill: {})[{}]",
+                    layout::font_sizes::SUBSECTION,
                     theme.color.get_h2_color(),
                     escaped
                 );
@@ -970,7 +1008,10 @@ This is a paragraph.
         PdfRenderer::render_markdown_as_typst(content, &mut output, &theme);
 
         // Check heading formatting (now includes fill color)
-        assert!(output.contains("#text(size: 16pt, weight: \"bold\", fill:"));
+        assert!(output.contains(&format!(
+            "#text(size: {}, weight: \"bold\", fill:",
+            layout::font_sizes::SECTION
+        )));
         assert!(output.contains("#line(length: 100%, stroke:"));
 
         // Check list formatting
@@ -999,22 +1040,30 @@ This is a paragraph.
     #[test]
     fn test_font_theme_selection() {
         let renderer = PdfRenderer::new(None).expect("Failed to create PDF renderer");
-        let theme = create_test_theme();
+        let doc = create_test_document();
 
         // Test classic theme
-        let mut doc = create_test_document();
-        doc.metadata.font_theme = "classic".to_string();
-        let source = renderer.generate_typst_source(&doc, &theme);
+        let classic_theme = Theme {
+            color: ColorTheme::load("modern").expect("Failed to load color theme"),
+            font: FontTheme::load("classic").expect("Failed to load classic font theme"),
+        };
+        let source = renderer.generate_typst_source(&doc, &classic_theme);
         assert!(source.contains("#set text(font: \"Georgia\""));
 
         // Test modern theme
-        doc.metadata.font_theme = "modern".to_string();
-        let source = renderer.generate_typst_source(&doc, &theme);
+        let modern_theme = Theme {
+            color: ColorTheme::load("modern").expect("Failed to load color theme"),
+            font: FontTheme::load("modern").expect("Failed to load modern font theme"),
+        };
+        let source = renderer.generate_typst_source(&doc, &modern_theme);
         assert!(source.contains("#set text(font: \"Inter\""));
 
         // Test sharp theme
-        doc.metadata.font_theme = "sharp".to_string();
-        let source = renderer.generate_typst_source(&doc, &theme);
+        let sharp_theme = Theme {
+            color: ColorTheme::load("modern").expect("Failed to load color theme"),
+            font: FontTheme::load("sharp").expect("Failed to load sharp font theme"),
+        };
+        let source = renderer.generate_typst_source(&doc, &sharp_theme);
         assert!(source.contains("#set text(font: \"Montserrat\""));
     }
 }

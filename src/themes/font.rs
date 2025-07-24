@@ -1,4 +1,4 @@
-use crate::constants::{font_sizes, AVAILABLE_THEMES};
+use crate::constants::{layout::font_sizes, AVAILABLE_THEMES};
 use crate::error::CvError;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
