@@ -1,4 +1,5 @@
 use crate::config::RecipientInfo;
+use crate::constants::icons;
 use crate::parser::Document;
 use crate::render::{load_template, RenderEngine};
 use crate::themes::Theme;
@@ -183,33 +184,41 @@ impl PdfRenderer {
 
         // Phone with FontAwesome icon
         if let Some(phone) = &doc.metadata.phone {
-            contact_parts.push(format!("#text(font: \"FontAwesome\")[\\u{{f095}}] {phone}"));
+            contact_parts.push(format!(
+                "#text(font: \"{}\")[{}] {phone}",
+                icons::FONT_NAME,
+                icons::PHONE
+            ));
         }
 
         // Email with FontAwesome icon
         let escaped_email = doc.metadata.email.replace('@', "\\@");
         contact_parts.push(format!(
-            "#text(font: \"FontAwesome\")[\\u{{f0e0}}] {escaped_email}"
+            "#text(font: \"{}\")[{}] {escaped_email}",
+            icons::FONT_NAME,
+            icons::EMAIL
         ));
 
         // Website with FontAwesome icon
         if let Some(website) = &doc.metadata.website {
             contact_parts.push(format!(
-                "#text(font: \"FontAwesome\")[\\u{{f015}}] #link(\"{website}\")[{website}]"
+                "#text(font: \"{}\")[{}] #link(\"{website}\")[{website}]",
+                icons::FONT_NAME,
+                icons::WEBSITE
             ));
         }
 
         // GitHub with FontAwesome icon
         if let Some(github) = &doc.metadata.github {
             contact_parts.push(format!(
-                "#text(font: \"FontAwesome\")[\\u{{f09b}}] #link(\"https://github.com/{github}\")[github.com/{github}]"
+                "#text(font: \"{}\")[{}] #link(\"https://github.com/{github}\")[github.com/{github}]", icons::FONT_NAME, icons::GITHUB
             ));
         }
 
         // LinkedIn with FontAwesome icon
         if let Some(linkedin) = &doc.metadata.linkedin {
             contact_parts.push(format!(
-                "#text(font: \"FontAwesome\")[\\u{{f0e1}}] #link(\"https://linkedin.com/in/{linkedin}\")[linkedin.com/in/{linkedin}]"
+                "#text(font: \"{}\")[{}] #link(\"https://linkedin.com/in/{linkedin}\")[linkedin.com/in/{linkedin}]", icons::FONT_NAME, icons::LINKEDIN
             ));
         }
 
@@ -316,21 +325,25 @@ impl PdfRenderer {
         let escaped_email = doc.metadata.email.replace('@', "\\@");
         let _ = writeln!(
             source,
-            "#text(font: \"FontAwesome\")[\\u{{f0e0}}] {escaped_email}"
+            "#text(font: \"{}\")[{}] {escaped_email}",
+            icons::FONT_NAME,
+            icons::EMAIL
         );
 
         if let Some(linkedin) = &doc.metadata.linkedin {
-            let _ = writeln!(source, "#text(font: \"FontAwesome\")[\\u{{f0e1}}] #link(\"https://linkedin.com/in/{linkedin}\")[linkedin.com/in/{linkedin}]");
+            let _ = writeln!(source, "#text(font: \"{}\")[{}] #link(\"https://linkedin.com/in/{linkedin}\")[linkedin.com/in/{linkedin}]", icons::FONT_NAME, icons::LINKEDIN);
         }
 
         if let Some(github) = &doc.metadata.github {
-            let _ = writeln!(source, "#text(font: \"FontAwesome\")[\\u{{f09b}}] #link(\"https://github.com/{github}\")[github.com/{github}]");
+            let _ = writeln!(source, "#text(font: \"{}\")[{}] #link(\"https://github.com/{github}\")[github.com/{github}]", icons::FONT_NAME, icons::GITHUB);
         }
 
         if let Some(website) = &doc.metadata.website {
             let _ = writeln!(
                 source,
-                "#text(font: \"FontAwesome\")[\\u{{f015}}] #link(\"{website}\")[{website}]"
+                "#text(font: \"{}\")[{}] #link(\"{website}\")[{website}]",
+                icons::FONT_NAME,
+                icons::WEBSITE
             );
         }
     }
@@ -844,11 +857,31 @@ mod tests {
         assert!(source.contains("San Francisco, CA"));
 
         // Check FontAwesome icons
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f095}]")); // Phone
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f0e0}]")); // Email
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f015}]")); // Home
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f09b}]")); // GitHub
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f0e1}]")); // LinkedIn
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}]",
+            icons::FONT_NAME,
+            icons::PHONE
+        ))); // Phone
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}]",
+            icons::FONT_NAME,
+            icons::EMAIL
+        ))); // Email
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}]",
+            icons::FONT_NAME,
+            icons::WEBSITE
+        ))); // Home
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}]",
+            icons::FONT_NAME,
+            icons::GITHUB
+        ))); // GitHub
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}]",
+            icons::FONT_NAME,
+            icons::LINKEDIN
+        ))); // LinkedIn
 
         // Check contact info
         assert!(source.contains("test\\@example.com")); // @ should be escaped
@@ -881,26 +914,41 @@ mod tests {
         let source = renderer.generate_typst_source(&doc, &theme);
 
         // Check that FontAwesome font is used for icons
-        assert!(source.contains("#text(font: \"FontAwesome\")"));
+        assert!(source.contains(&format!("#text(font: \"{}\")", icons::FONT_NAME)));
 
         // Check specific icon codes
-        assert!(source.contains("\\u{f095}")); // Phone icon
-        assert!(source.contains("\\u{f0e0}")); // Email icon
-        assert!(source.contains("\\u{f015}")); // Home/website icon
-        assert!(source.contains("\\u{f09b}")); // GitHub icon
-        assert!(source.contains("\\u{f0e1}")); // LinkedIn icon
+        assert!(source.contains(icons::PHONE)); // Phone icon
+        assert!(source.contains(icons::EMAIL)); // Email icon
+        assert!(source.contains(icons::WEBSITE)); // Home/website icon
+        assert!(source.contains(icons::GITHUB)); // GitHub icon
+        assert!(source.contains(icons::LINKEDIN)); // LinkedIn icon
 
         // Verify icons are paired with correct content
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f095}] +1 234 567 8900"));
-        assert!(source.contains("#text(font: \"FontAwesome\")[\\u{f0e0}] test\\@example.com"));
-        assert!(source
-            .contains("#text(font: \"FontAwesome\")[\\u{f015}] #link(\"https://example.com\")"));
-        assert!(source.contains(
-            "#text(font: \"FontAwesome\")[\\u{f09b}] #link(\"https://github.com/testuser\")"
-        ));
-        assert!(source.contains(
-            "#text(font: \"FontAwesome\")[\\u{f0e1}] #link(\"https://linkedin.com/in/testuser\")"
-        ));
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}] +1 234 567 8900",
+            icons::FONT_NAME,
+            icons::PHONE
+        )));
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}] test\\@example.com",
+            icons::FONT_NAME,
+            icons::EMAIL
+        )));
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}] #link(\"https://example.com\")",
+            icons::FONT_NAME,
+            icons::WEBSITE
+        )));
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}] #link(\"https://github.com/testuser\")",
+            icons::FONT_NAME,
+            icons::GITHUB
+        )));
+        assert!(source.contains(&format!(
+            "#text(font: \"{}\")[{}] #link(\"https://linkedin.com/in/testuser\")",
+            icons::FONT_NAME,
+            icons::LINKEDIN
+        )));
     }
 
     #[test]

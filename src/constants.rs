@@ -1,4 +1,6 @@
 /// Shared constants used throughout the application
+pub mod icons;
+
 /// Available theme names
 pub const AVAILABLE_THEMES: &[&str] = &["classic", "modern", "sharp"];
 

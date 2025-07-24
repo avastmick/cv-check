@@ -27,6 +27,11 @@ This directory contains the core Rust implementation of the CV Check CLI tool fo
   - Standard font sizes
   - Markdown parser options
 
+- **`constants/icons.rs`** - FontAwesome icon constants
+  - Icon unicode values for common symbols
+  - Font name constant
+  - Used throughout PDF rendering for consistent icons
+
 - **`error.rs`** - Error types and handling
   - `CvError` enum - All possible application errors
   - Uses `thiserror` for ergonomic error definitions
