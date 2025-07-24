@@ -1,60 +1,8 @@
-use cv_check::config::DocumentMetadata;
-use cv_check::parser::Document;
 use cv_check::render::{pdf::PdfRenderer, RenderEngine};
-use cv_check::themes::Theme;
+use cv_check::test_utils::{create_full_cv_document, create_test_document, create_test_theme};
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
-
-fn create_test_document() -> Document {
-    let content = r"# Professional Summary
-
-Experienced software engineer with 10+ years building scalable applications.
-
-# Experience
-
-## Senior Software Engineer
-**Tech Corp** | *2020 - Present*
-
-- Led development of microservices architecture
-- Mentored team of 8 engineers
-- Reduced deployment time by 70%
-
-# Education
-
-## B.S. Computer Science
-**Stanford University** | *2010 - 2014*
-
-# Skills
-
-**Languages**: Rust, Python, JavaScript
-**Tools**: Docker, Kubernetes, AWS";
-
-    Document {
-        metadata: DocumentMetadata {
-            name: "John Doe".to_string(),
-            email: "john@example.com".to_string(),
-            phone: Some("+1 234 567 8900".to_string()),
-            location: Some("San Francisco, CA".to_string()),
-            linkedin: Some("johndoe".to_string()),
-            github: Some("johndoe".to_string()),
-            website: Some("https://johndoe.com".to_string()),
-            font_theme: "modern".to_string(),
-            color_theme: "modern".to_string(),
-            layout: cv_check::config::LayoutOptions::default(),
-            recipient: None,
-            date: None,
-            subject: None,
-            custom: std::collections::HashMap::new(),
-        },
-        content: content.to_string(),
-        markdown_ast: cv_check::parser::markdown::parse_markdown(content),
-    }
-}
-
-fn create_test_theme() -> Theme {
-    Theme::new("modern", "modern").expect("Failed to create theme")
-}
 
 #[test]
 fn test_pdf_renderer_creates_output_file() {
@@ -62,7 +10,7 @@ fn test_pdf_renderer_creates_output_file() {
     let output_path = temp_dir.path().join("test.pdf");
 
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
-    let doc = create_test_document();
+    let doc = create_full_cv_document();
     let theme = create_test_theme();
 
     renderer
@@ -104,7 +52,7 @@ fn test_pdf_renderer_with_custom_template() {
 
     let renderer = PdfRenderer::new(Some(&template_path))
         .expect("Failed to create renderer with custom template");
-    let doc = create_test_document();
+    let doc = create_full_cv_document();
     let theme = create_test_theme();
 
     renderer
@@ -188,7 +136,7 @@ fn test_pdf_renderer_with_embedded_template() {
 
     // Ensure we can render with the embedded template
     let renderer = PdfRenderer::new(None).expect("Failed to create renderer");
-    let doc = create_test_document();
+    let doc = create_full_cv_document();
     let theme = create_test_theme();
 
     // This should use the embedded template from include_str!

@@ -834,9 +834,7 @@ mod tests {
     use super::*;
     use crate::config::{DocumentMetadata, LayoutOptions};
     use crate::parser::Document;
-    use crate::themes::color::ColorTheme;
-    use crate::themes::font::FontTheme;
-    use crate::themes::Theme;
+    use crate::themes::{color::ColorTheme, font::FontTheme, Theme};
     use std::collections::HashMap;
 
     fn create_test_document() -> Document {
@@ -1051,10 +1049,7 @@ This is a paragraph.
         assert!(source.contains("#set text(font: \"Georgia\""));
 
         // Test modern theme
-        let modern_theme = Theme {
-            color: ColorTheme::load("modern").expect("Failed to load color theme"),
-            font: FontTheme::load("modern").expect("Failed to load modern font theme"),
-        };
+        let modern_theme = create_test_theme();
         let source = renderer.generate_typst_source(&doc, &modern_theme);
         assert!(source.contains("#set text(font: \"Inter\""));
 

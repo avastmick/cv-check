@@ -6,3 +6,6 @@ pub mod error;
 pub mod parser;
 pub mod render;
 pub mod themes;
+
+#[doc(hidden)]
+pub mod test_utils;
